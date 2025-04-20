@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * ModelMapper and ObjectMapper configuration class.
- * This class is responsible for the configuration of ModelMapper and ObjectMapper.
+ * ModelMapper y ObjectMapper para la aplicación.
+ * Esta clase se encarga de la configuración de ModelMapper y ObjectMapper
  */
 @Configuration
 public class MappersConfig {

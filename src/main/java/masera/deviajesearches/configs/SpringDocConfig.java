@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * SpringDocConfig is a configuration class for SpringDoc, which is used to generate
- * OpenAPI documentation for the application.
+ * SpringDocConfig es la clase de configuración para la documentación de la API.
+ * Esta clase utiliza SpringDoc para generar la documentación de la API
  */
 @Configuration
 public class SpringDocConfig {
