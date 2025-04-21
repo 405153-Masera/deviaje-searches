@@ -15,9 +15,9 @@ import org.springframework.context.annotation.Configuration;
 public class MappersConfig {
 
   /**
-   * The ModelMapper bean by default.
+   * El ModelMapper por default.
    *
-   * @return the ModelMapper by default.
+   * @return el ModelMapper por default.
    */
   @Bean
   public ModelMapper modelMapper() {
@@ -25,9 +25,9 @@ public class MappersConfig {
   }
 
   /**
-   * The ModelMapper bean to merge objects.
+   * El ModelMapper que se utiliza para actualizar objetos.
    *
-   * @return the ModelMapper to use in updates.
+   * @return el ModelMapper para actualizaciones.
    */
   @Bean("mergerMapper")
   public ModelMapper mergerMapper() {
@@ -38,9 +38,9 @@ public class MappersConfig {
   }
 
   /**
-   * The ObjectMapper bean.
+   * El ObjectMapper que sirve para mapear objetos a JSON y viceversa.
    *
-   * @return the ObjectMapper with JavaTimeModule included.
+   * @return el ObjectMapper creado.
    */
   @Bean
   public ObjectMapper objectMapper() {
