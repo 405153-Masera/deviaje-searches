@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/search/flights")
+@RequestMapping("/api/searches/flights")
 public class FlightSearchController {
 
   private final FlightSearchService flightSearchService;

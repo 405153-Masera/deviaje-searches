@@ -4,10 +4,11 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.dtos.amadeus.request.FlightSearchRequest;
+import masera.deviajesearches.utils.AmadeusErrorHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
@@ -21,6 +22,8 @@ import reactor.core.publisher.Mono;
 public class FlightClient {
 
   private final WebClient webClient;
+
+  private final AmadeusErrorHandler errorHandler;
 
   private static  final String FLIGHT_OFFERS_URL = "/v2/shopping/flight-offers";
 
@@ -41,7 +44,10 @@ public class FlightClient {
             .retrieve()
             .bodyToMono(Object.class)
             .doOnSuccess(response -> log.info("Búsqueda de vuelos completada exitosamente"))
-            .doOnError(error -> log.error("Error al buscar vuelos: {}", error.getMessage()));
+            .doOnError(error -> log.error("Error al buscar vuelos: {}", error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
+              throw  errorHandler.handleAmadeusError(e);
+            });
   }
 
   /**

@@ -19,8 +19,6 @@ public class AmadeusTokenServiceImpl implements AmadeusTokenService {
 
   private final AmadeusAuthClient amadeusAuthClient;
 
-  private final AmadeusConfig amadeusConfig;
-
   private String currentToken;
 
   private LocalDateTime tokenExpiration;

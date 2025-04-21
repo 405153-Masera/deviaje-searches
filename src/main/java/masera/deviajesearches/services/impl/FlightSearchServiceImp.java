@@ -32,14 +32,13 @@ public class FlightSearchServiceImp implements FlightSearchService {
     log.info("Iniciando búsqueda de vuelos con parámetros: {}", flightSearchRequest);
     try {
       String token = amadeusTokenService.getToken();
-
       Object flights = flightClient.searchFlightOffers(flightSearchRequest, token).block();
-
       log.info("Búsqueda de vuelos completada con éxito.");
+
       return flights;
     } catch (Exception e) {
       log.error("Error de búsqueda de vuelos: {}", e.getMessage());
-      throw new RuntimeException("Error al buscar vuelos: " + e.getMessage(), e);
+      throw e;
     }
   }
 }
