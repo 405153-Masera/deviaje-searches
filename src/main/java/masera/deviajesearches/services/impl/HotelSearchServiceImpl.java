@@ -3,7 +3,7 @@ package masera.deviajesearches.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.clients.HotelClient;
-import masera.deviajesearches.dtos.amadeus.request.HotelOffersRequest;
+import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
 import masera.deviajesearches.dtos.amadeus.request.HotelRequest;
 import masera.deviajesearches.exceptions.AmadeusApiException;
 import masera.deviajesearches.services.interfaces.AmadeusTokenService;
@@ -44,29 +44,29 @@ public class HotelSearchServiceImpl implements HotelSearchService {
   }
 
   @Override
-  public Object findHotelOffers(HotelOffersRequest hotelOffersRequest) {
-    log.info("Iniciando búsqueda de ofertas de hoteles: {}", hotelOffersRequest);
+  public Object findHotelOffers(HotelSearchRequest hotelSearchRequest) {
+    log.info("Iniciando búsqueda de ofertas de hoteles: {}", hotelSearchRequest);
 
-    if (hotelOffersRequest.getHotelIds() == null || hotelOffersRequest.getHotelIds().isEmpty()) {
+    if (hotelSearchRequest.getHotelIds() == null || hotelSearchRequest.getHotelIds().isEmpty()) {
       throw new AmadeusApiException("Debe proporcionar al menos un ID de hotel", 400);
     }
 
-    if (hotelOffersRequest.getCheckInDate() == null) {
+    if (hotelSearchRequest.getCheckInDate() == null) {
       throw new AmadeusApiException("La fecha de entrada es obligatoria", 400);
     }
 
-    if (hotelOffersRequest.getCheckOutDate() == null) {
+    if (hotelSearchRequest.getCheckOutDate() == null) {
       throw new AmadeusApiException("La fecha de salida es obligatoria", 400);
     }
 
-    if (hotelOffersRequest.getAdults() == null || hotelOffersRequest.getAdults() < 1) {
+    if (hotelSearchRequest.getAdults() == null || hotelSearchRequest.getAdults() < 1) {
       throw new AmadeusApiException("Debe indicar al menos 1 adulto", 400);
     }
 
     try {
 
       String token = amadeusTokenService.getToken();
-      Object offersHotels = hotelClient.findOffersByHotelsId(hotelOffersRequest, token).block();
+      Object offersHotels = hotelClient.findOffersByHotelsId(hotelSearchRequest, token).block();
       log.info("Búsqueda de ofertas de hoteles completada con éxito.");
 
       return offersHotels;

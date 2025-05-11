@@ -1,6 +1,8 @@
 package masera.deviajesearches.services.interfaces;
 
+import java.util.List;
 import masera.deviajesearches.dtos.amadeus.request.FlightSearchRequest;
+import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,4 +18,28 @@ public interface FlightSearchService {
    * @return un objeto que representa la respuesta de la búsqueda de vuelos.
    */
   Object searchFlights(FlightSearchRequest flightSearchRequest);
+
+  /**
+   * Obtiene ofertas alternativas de un vuelo (upselling).
+   *
+   * @param flightOffer objeto que contiene la oferta de vuelo original
+   * @return ofertas alternativas del vuelo
+   */
+  Object searchFlightOfferUpsell(Object flightOffer);
+
+  /**
+   * Verifica y actualiza el precio de una oferta de vuelo.
+   *
+   * @param flightOffer objeto que contiene la oferta de vuelo a verificar
+   * @return oferta de vuelo con precio actualizado
+   */
+  Object verifyFlightOfferPricing(Object flightOffer);
+
+  /**
+   * Busca ciudades por palabra clave.
+   *
+   * @param keyword Palabra clave para buscar.
+   * @return Resultados de la búsqueda.
+   */
+  List<CityDto> searchCities(String keyword);
 }

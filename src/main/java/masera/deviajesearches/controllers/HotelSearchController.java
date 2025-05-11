@@ -1,7 +1,7 @@
 package masera.deviajesearches.controllers;
 
 import lombok.RequiredArgsConstructor;
-import masera.deviajesearches.dtos.amadeus.request.HotelOffersRequest;
+import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
 import masera.deviajesearches.dtos.amadeus.request.HotelRequest;
 import masera.deviajesearches.services.interfaces.HotelSearchService;
 import org.springframework.http.ResponseEntity;
@@ -38,13 +38,13 @@ public class HotelSearchController {
   /**
    * Controlador para buscar ofertas de hoteles.
    *
-   * @param hotelOffersRequest parámetros de búsqueda de ofertas de hoteles.
+   * @param hotelSearchRequest parámetros de búsqueda de ofertas de hoteles.
    * @return una respuesta con los resultados de la búsqueda.
    */
   @PostMapping("/offers")
   public ResponseEntity<Object> findHotelOffers(
-          @RequestBody HotelOffersRequest hotelOffersRequest) {
-    Object result = hotelSearchService.findHotelOffers(hotelOffersRequest);
+          @RequestBody HotelSearchRequest hotelSearchRequest) {
+    Object result = hotelSearchService.findHotelOffers(hotelSearchRequest);
     return ResponseEntity.ok(result);
   }
 

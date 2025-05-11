@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * DTO que representa la solicitud para buscar hoteles.
+ * DTO que representa la solicitud para buscar tarifas de hoteles.
  */
 @Data
 @AllArgsConstructor

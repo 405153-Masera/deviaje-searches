@@ -1,9 +1,12 @@
 package masera.deviajesearches.clients;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import masera.deviajesearches.dtos.amadeus.request.HotelOffersRequest;
+import masera.deviajesearches.configs.HotelbedsConfig;
+import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
 import masera.deviajesearches.dtos.amadeus.request.HotelRequest;
 import masera.deviajesearches.utils.AmadeusErrorHandler;
 import org.springframework.http.HttpHeaders;
@@ -23,37 +26,38 @@ import reactor.core.publisher.Mono;
 public class HotelClient {
 
   private final WebClient webClient;
+  private final HotelbedsConfig hotelbedsConfig;
   private final AmadeusErrorHandler errorHandler;
 
-  private static final String HOTELS_BY_CITY_PATH = "/v1/reference-data/locations/hotels/by-city";
-  private static final String HOTEL_OFFERS_PATH = "/v3/shopping/hotel-offers";
-  private static final String HOTEL_OFFER_DETAILS_PATH = "/v3/shopping/hotel-offers/{offerId}";
+  private static final String AVAILABILITY_ENDPOINT = "/hotel-api/1.0/hotels";
+  private static final String CONTENT_ENDPOINT = "/hotel-content-api/1.0/hotels";
+  private static final String CHECK_RATES_ENDPOINT = "/hotel-api/1.0/checkrates";
 
-  /**
+  /*/**
    * Obtiene una lista de hoteles por ciudad.
    *
    * @param hotelRequest parámetros de búsqueda de hoteles.
    * @param token token de autenticación.
    * @return una lista de hoteles.
-   */
-  public Mono<Object> findsHotelsByCity(HotelRequest hotelRequest, String token) {
 
-    log.info("Buscando hoteles en la ciudad: {}", hotelRequest.getCityCode());
+  public Mono<HotelbedsAvailabilityResponse> searchHotels(HotelbedsAvailabilityRequest request) {
+    log.info("Buscando hoteles en Hotelbeds con destino: {}", request.getDestination().getCode());
 
-    String uri = getUrl(hotelRequest);
-
-    return webClient.get()
-            .uri(uri)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+    return webClient
+            .post()
+            .uri(hotelbedsConfig.getBaseUrl() + AVAILABILITY_ENDPOINT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(this::addHotelbedsHeaders)
+            .bodyValue(request)
             .retrieve()
-            .bodyToMono(Object.class)
+            .bodyToMono(HotelbedsAvailabilityResponse.class)
             .doOnSuccess(response -> log.info("Búsqueda de hoteles completada exitosamente"))
             .doOnError(error -> log.error("Error al buscar hoteles: {}", error.getMessage()))
             .onErrorResume(WebClientResponseException.class, e -> {
-              throw errorHandler.handleAmadeusError(e);
+              log.error("Error de respuesta de Hotelbeds: {}", e.getResponseBodyAsString());
+              return Mono.error(new HotelbedsApiException("Error al buscar hoteles: " + e.getMessage(), e));
             });
-
-  }
+  }*/
 
   /**
    * Obtiene detalles de una oferta específica.
@@ -79,15 +83,15 @@ public class HotelClient {
   /**
    * Obtiene las ofertas de los hoteles por ID.
    *
-   * @param hotelOffersRequest representa los parámetros
+   * @param hotelSearchRequest representa los parámetros
    *                           de búsqueda de ofertas de hoteles.
    * @param token token de autenticación.
    * @return una lista de ofertas de hoteles.
    */
-  public Mono<Object> findOffersByHotelsId(HotelOffersRequest hotelOffersRequest, String token) {
-    log.info("Buscando ofertas para {} hoteles", hotelOffersRequest.getHotelIds().size());
+  public Mono<Object> findOffersByHotelsId(HotelSearchRequest hotelSearchRequest, String token) {
+    log.info("Buscando ofertas para {} hoteles", hotelSearchRequest.getHotelIds().size());
 
-    String uri = getUrl(hotelOffersRequest);
+    String uri = getUrl(hotelSearchRequest);
 
     return webClient.get()
             .uri(uri)
@@ -126,23 +130,33 @@ public class HotelClient {
   /**
    * Construye la URL para la búsqueda de ofertas de hoteles.
    *
-   * @param hotelOffersRequest representa los parámetros de búsqueda de ofertas de hoteles.
+   * @param hotelSearchRequest representa los parámetros de búsqueda de ofertas de hoteles.
    * @return la URL construida.
    */
-  private String getUrl(HotelOffersRequest hotelOffersRequest) {
+  private String getUrl(HotelSearchRequest hotelSearchRequest) {
     return UriComponentsBuilder.fromPath(HOTEL_OFFERS_PATH)
-            .queryParam("hotelIds", String.join(",", hotelOffersRequest.getHotelIds()))
-            .queryParam("checkInDate", hotelOffersRequest.getCheckInDate())
-            .queryParam("checkOutDate", hotelOffersRequest.getCheckOutDate())
-            .queryParam("adults", hotelOffersRequest.getAdults())
+            .queryParam("hotelIds", String.join(",", hotelSearchRequest.getHotelIds()))
+            .queryParam("checkInDate", hotelSearchRequest.getCheckInDate())
+            .queryParam("checkOutDate", hotelSearchRequest.getCheckOutDate())
+            .queryParam("adults", hotelSearchRequest.getAdults())
             .queryParamIfPresent("roomQuantity",
-                    Optional.ofNullable(hotelOffersRequest.getRoomQuantity()))
+                    Optional.ofNullable(hotelSearchRequest.getRoomQuantity()))
             .queryParamIfPresent("currency",
-                    Optional.ofNullable(hotelOffersRequest.getCurrency()))
+                    Optional.ofNullable(hotelSearchRequest.getCurrency()))
             .queryParamIfPresent("priceRange",
-                    Optional.ofNullable(hotelOffersRequest.getPriceRange()))
+                    Optional.ofNullable(hotelSearchRequest.getPriceRange()))
             .queryParamIfPresent("boardType",
-                    Optional.ofNullable(hotelOffersRequest.getBoardType()))
+                    Optional.ofNullable(hotelSearchRequest.getBoardType()))
             .build().toUriString();
+  }
+
+  private void addHotelbedsHeaders(HttpHeaders headers) {
+    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+    String signature = DigestUtils.sha256Hex(hotelbedsConfig.getApiKey() + hotelbedsConfig.getSecret() + timestamp);
+
+    headers.set("Api-Key", hotelbedsConfig.getApiKey());
+    headers.set("X-Signature", signature);
+    headers.set("Accept", "application/json");
+    headers.set("Accept-Encoding", "gzip");
   }
 }

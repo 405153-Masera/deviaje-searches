@@ -1,6 +1,6 @@
 package masera.deviajesearches.services.interfaces;
 
-import masera.deviajesearches.dtos.amadeus.request.HotelOffersRequest;
+import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
 import masera.deviajesearches.dtos.amadeus.request.HotelRequest;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public interface HotelSearchService {
    * @param request criterios de búsqueda de ofertas.
    * @return resultados de la búsqueda de ofertas.
    */
-  Object findHotelOffers(HotelOffersRequest request);
+  Object findHotelOffers(HotelSearchRequest request);
 
   /**
    * Obtiene detalles de una oferta específica.

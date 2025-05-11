@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.clients.AmadeusAuthClient;
-import masera.deviajesearches.configs.AmadeusConfig;
 import masera.deviajesearches.dtos.amadeus.response.AmadeusTokenResponse;
 import masera.deviajesearches.services.interfaces.AmadeusTokenService;
 import org.springframework.stereotype.Service;
