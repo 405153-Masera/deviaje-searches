@@ -22,7 +22,6 @@ public class AmadeusAuthClient {
 
   private final WebClient webClient;
 
-  // propiedades inyectadas desde application.properties
   @Value("${amadeus.api.key}")
   private String apiKey;
 
@@ -42,7 +41,6 @@ public class AmadeusAuthClient {
    */
   public Mono<AmadeusTokenResponse> getAmadeusToken() {
 
-    // este log es para registrar la solicitud de token
     log.info("Solicitando el token de autenticación a Amadeus");
 
     MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();

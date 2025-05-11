@@ -1,8 +1,15 @@
 package masera.deviajesearches.dtos.amadeus.response.hotelbeds;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+/**
+ * DTO que representa una imagen de un hotel.
+ */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ImageDto {
   private String imageTypeCode;
   private String path;

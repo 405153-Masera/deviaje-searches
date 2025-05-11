@@ -1,20 +1,21 @@
 package masera.deviajesearches.clients;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.configs.HotelbedsConfig;
+import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
+import masera.deviajesearches.dtos.amadeus.response.HotelSearchResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.utils.AmadeusErrorHandler;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-
 
 /**
  * Cliente para consumir el microservicio de hoteles de la API de Amadeus.
@@ -32,15 +33,15 @@ public class HotelClient {
   private static final String CONTENT_ENDPOINT = "/hotel-content-api/1.0/hotels";
   private static final String LOCATIONS_ENDPOINT = "/hotel-content-api/1.0/locations";
   private static final String CHECK_RATES_ENDPOINT = "/hotel-api/1.0/checkrates";
+  private static final String BOOKING_ENDPOINT = "/hotel-api/1.0/bookings";
 
-  /*/**
-   * Obtiene una lista de hoteles por ciudad.
+  /**
+   * Obtiene una lista de hoteles según los criterios de búsqueda.
    *
-   * @param hotelRequest parámetros de búsqueda de hoteles.
-   * @param token token de autenticación.
+   * @param request parámetros de búsqueda de hoteles.
    * @return una lista de hoteles.
-
-  public Mono<HotelbedsAvailabilityResponse> searchHotels(HotelbedsAvailabilityRequest request) {
+  +*/
+  public Mono<HotelSearchResponse> searchHotels(HotelSearchRequest request) {
     log.info("Buscando hoteles en Hotelbeds con destino: {}", request.getDestination().getCode());
 
     return webClient
@@ -50,15 +51,72 @@ public class HotelClient {
             .headers(this::addHotelbedsHeaders)
             .bodyValue(request)
             .retrieve()
-            .bodyToMono(HotelbedsAvailabilityResponse.class)
+            .bodyToMono(HotelSearchResponse.class)
             .doOnSuccess(response -> log.info("Búsqueda de hoteles completada exitosamente"))
             .doOnError(error -> log.error("Error al buscar hoteles: {}", error.getMessage()))
             .onErrorResume(WebClientResponseException.class, e -> {
               log.error("Error de respuesta de Hotelbeds: {}", e.getResponseBodyAsString());
-              return Mono.error(new HotelbedsApiException("Error al buscar hoteles: " + e.getMessage(), e));
+              throw errorHandler.handleAmadeusError(e);
             });
   }
-    */
+
+  /**
+   * Verifica la disponibilidad y precio de una tarifa.
+   *
+   * @param rateKey clave de la tarifa a verificar
+   * @return información actualizada de la tarifa
+   */
+  public Mono<Object> checkRates(String rateKey) {
+    log.info("Verificando tarifa con clave: {}", rateKey);
+
+    // Crear el cuerpo de la solicitud
+    java.util.Map<String, Object> request = new java.util.HashMap<>();
+    java.util.List<String> rateKeys = new java.util.ArrayList<>();
+    rateKeys.add(rateKey);
+    request.put("rooms", rateKeys);
+
+    return webClient
+            .post()
+            .uri(hotelbedsConfig.getBaseUrl() + CHECK_RATES_ENDPOINT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(this::addHotelbedsHeaders)
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(Object.class)
+            .doOnSuccess(response -> log.info("Verificación de tarifa completada exitosamente"))
+            .doOnError(error -> log.error("Error al verificar tarifa: {}", error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
+              log.error("Error de respuesta de Hotelbeds: {}", e.getResponseBodyAsString());
+              throw errorHandler.handleAmadeusError(e);
+            });
+  }
+
+  /**
+   * Crea una reserva de hotel.
+   *
+   * @param bookingRequest solicitud de reserva
+   * @return confirmación de la reserva
+   */
+  public Mono<Object> createBooking(Object bookingRequest) {
+    log.info("Creando reserva de hotel");
+
+    return webClient
+            .post()
+            .uri(hotelbedsConfig.getBaseUrl() + BOOKING_ENDPOINT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(this::addHotelbedsHeaders)
+            .bodyValue(bookingRequest)
+            .retrieve()
+            .bodyToMono(Object.class)
+            .doOnSuccess(response -> log.info("Reserva creada exitosamente"))
+            .doOnError(error -> log.error("Error al crear reserva: {}", error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
+              log.error("Error de respuesta de Hotelbeds: {}", e.getResponseBodyAsString());
+              throw errorHandler.handleAmadeusError(e);
+            });
+  }
+
+
   /**
    * Obtiene hoteles desde la API de contenido de Hotelbeds.
    *
@@ -83,7 +141,8 @@ public class HotelClient {
             .retrieve()
             .bodyToMono(HotelContentResponse.class)
             .doOnSuccess(response -> log.info("Contenido de hoteles obtenido exitosamente"))
-            .doOnError(error -> log.error("Error al obtener contenido de hoteles: {}", error.getMessage()));
+            .doOnError(error -> log.error("Error al obtener contenido de hoteles: {}",
+                    error.getMessage()));
   }
 
   /**
@@ -95,8 +154,11 @@ public class HotelClient {
    * @param lastUpdateTime fecha de última actualización
    * @return Mono con la respuesta de contenido de hoteles
    */
-  public Mono<HotelContentResponse> getHotelContentUpdates(int from, int to, String language, String lastUpdateTime) {
-    log.info("Obteniendo actualizaciones de hoteles desde {} con lastUpdateTime {}", from, lastUpdateTime);
+  public Mono<HotelContentResponse> getHotelContentUpdates(int from, int to,
+                                                           String language, String lastUpdateTime) {
+
+    log.info("Obteniendo actualizaciones de hoteles desde {} con lastUpdateTime {}",
+            from, lastUpdateTime);
 
     String uri = UriComponentsBuilder.fromPath(CONTENT_ENDPOINT)
             .queryParam("fields", "all")
@@ -112,7 +174,8 @@ public class HotelClient {
             .retrieve()
             .bodyToMono(HotelContentResponse.class)
             .doOnSuccess(response -> log.info("Actualizaciones de hoteles obtenidas exitosamente"))
-            .doOnError(error -> log.error("Error al obtener actualizaciones de hoteles: {}", error.getMessage()));
+            .doOnError(error -> log.error("Error al obtener actualizaciones de hoteles: {}",
+                    error.getMessage()));
   }
 
 
@@ -152,7 +215,8 @@ public class HotelClient {
   public Mono<Object> getDestinations(String countryCode, String language) {
     log.info("Obteniendo destinos para país {} en idioma {}", countryCode, language);
 
-    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath(LOCATIONS_ENDPOINT + "/destinations")
+    UriComponentsBuilder uriBuilder = UriComponentsBuilder
+            .fromPath(LOCATIONS_ENDPOINT + "/destinations")
             .queryParam("language", language)
             .queryParam("fields", "all")
             .queryParam("from", 7001)

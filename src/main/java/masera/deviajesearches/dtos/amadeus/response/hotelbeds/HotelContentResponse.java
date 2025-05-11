@@ -1,6 +1,5 @@
 package masera.deviajesearches.dtos.amadeus.response.hotelbeds;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.Data;

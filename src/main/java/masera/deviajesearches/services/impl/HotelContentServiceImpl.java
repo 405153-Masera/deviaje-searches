@@ -218,7 +218,7 @@ public class HotelContentServiceImpl implements HotelContentService {
             }
 
           } catch (Exception e) {
-              log.error("Error al procesar país: {}", e.getMessage(), e);
+            log.error("Error al procesar país: {}", e.getMessage(), e);
           }
         }
       }

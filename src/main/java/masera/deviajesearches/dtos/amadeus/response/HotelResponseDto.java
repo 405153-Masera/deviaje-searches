@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.ImageDto;
 
 /**
  * DTO que representa un hotel.
@@ -31,5 +32,5 @@ public class HotelResponseDto {
   private String number;
   private String city;
   private String email;
-  private List<String> images;
+  private List<ImageDto> images;
 }

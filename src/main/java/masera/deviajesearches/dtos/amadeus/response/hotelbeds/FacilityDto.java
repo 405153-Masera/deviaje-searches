@@ -2,6 +2,9 @@ package masera.deviajesearches.dtos.amadeus.response.hotelbeds;
 
 import lombok.Data;
 
+/**
+ * DTO que representa las instalaciones de un hotel.
+ */
 @Data
 public class FacilityDto {
   private Integer facilityCode;

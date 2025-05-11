@@ -13,7 +13,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HotelSearchResponse {
-  private List<Hotel> hotels;
+
+  private HotelsWrapper hotels;
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class HotelsWrapper {
+    private List<Hotel> hotels;
+  }
 
   @Data
   @NoArgsConstructor
@@ -22,7 +30,7 @@ public class HotelSearchResponse {
     private String code;
     private String name;
     private String categoryCode;
-    private Integer categoryName;
+    private String categoryName;
     private String destinationCode;
     private Double latitude;
     private Double longitude;

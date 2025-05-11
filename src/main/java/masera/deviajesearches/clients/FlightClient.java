@@ -14,7 +14,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-
 /**
  * Cliente para realizar búsquedas a la API de vuelos.
  */
