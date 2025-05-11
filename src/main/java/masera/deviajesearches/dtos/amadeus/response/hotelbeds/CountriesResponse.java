@@ -29,6 +29,6 @@ public class CountriesResponse {
   @Data
   public static class StateContent {
     private String code;
-    private ContentDto name;
+    private String name;
   }
 }

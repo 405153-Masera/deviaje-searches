@@ -127,6 +127,9 @@ public class HotelClient {
 
     String uri = UriComponentsBuilder.fromPath(LOCATIONS_ENDPOINT + "/countries")
             .queryParam("language", language)
+            .queryParam("fields", "all")
+            .queryParam("from", 1)
+            .queryParam("to", 1000)
             .build().toUriString();
 
     return webClient.get()
@@ -150,7 +153,10 @@ public class HotelClient {
     log.info("Obteniendo destinos para país {} en idioma {}", countryCode, language);
 
     UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath(LOCATIONS_ENDPOINT + "/destinations")
-            .queryParam("language", language);
+            .queryParam("language", language)
+            .queryParam("fields", "all")
+            .queryParam("from", 7001)
+            .queryParam("to", 8000);
 
     if (countryCode != null && !countryCode.isEmpty()) {
       uriBuilder.queryParam("countryCode", countryCode);
@@ -175,6 +181,5 @@ public class HotelClient {
     headers.set("Api-Key", hotelbedsConfig.getApiKey());
     headers.set("X-Signature", signature);
     headers.set("Accept", "application/json");
-    headers.set("Accept-Encoding", "gzip");
   }
 }

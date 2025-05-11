@@ -29,10 +29,10 @@ public class HotelDto {
   private String license;
   private Long giataCode;
   private List<PhoneDto> phones;
-  private List<RoomDTO> rooms;
+  private List<RoomDto> rooms;
   private List<FacilityDto> facilities;
-  private List<ImageDTO> images;
-  private List<TerminalDTO> terminals;
+  private List<ImageDto> images;
+  private List<TerminalDto> terminals;
   private String web;
   private String lastUpdate;
   private String s2C;

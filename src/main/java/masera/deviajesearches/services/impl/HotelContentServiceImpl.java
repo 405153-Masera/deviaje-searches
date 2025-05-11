@@ -160,7 +160,7 @@ public class HotelContentServiceImpl implements HotelContentService {
             Country country = getCountry(hotelDto.getCountryCode());
             State state = getState(hotelDto.getStateCode());
             Destination destination = getDestination(hotelDto.getDestinationCode());
-            Zone zone = getZone(hotelDto.getZoneCode());
+            Zone zone = getZone(hotelDto.getZoneCode(), hotelDto.getDestinationCode());
             Hotel hotel = saveHotel(hotelDto, country, state, destination, zone);
             result.add(hotel);
           } catch (Exception e) {
@@ -198,8 +198,8 @@ public class HotelContentServiceImpl implements HotelContentService {
               country.setCode(code);
 
               // Procesar descripción del país
-              if (countryData.getDescription() != null &&
-                      countryData.getDescription().getContent() != null) {
+              if (countryData.getDescription() != null
+                      && countryData.getDescription().getContent() != null) {
                 country.setDescription(countryData.getDescription().getContent());
               } else {
                 country.setDescription("País " + code);
@@ -239,8 +239,8 @@ public class HotelContentServiceImpl implements HotelContentService {
         state.setCode(stateData.getCode());
         state.setCountry(country);
 
-        if (stateData.getName() != null && stateData.getName().getContent() != null) {
-          state.setName(stateData.getName().getContent());
+        if (stateData.getName() != null) {
+          state.setName(stateData.getName());
         } else {
           state.setName("Estado " + stateData.getCode());
         }
@@ -423,7 +423,7 @@ public class HotelContentServiceImpl implements HotelContentService {
       return null;
     }
     return destinationRepository.findById(destinationCode).orElseThrow(
-            () -> new RuntimeException("No se encontró el país con código: " + destinationCode));
+            () -> new RuntimeException("No se encontró el destino con código: " + destinationCode));
   }
 
   /**
@@ -432,12 +432,12 @@ public class HotelContentServiceImpl implements HotelContentService {
    * @param zoneCode código de la zona
    * @return zona
    */
-  public Zone getZone(Integer zoneCode) {
+  public Zone getZone(Integer zoneCode, String destinationCode) {
     if (zoneCode == null) {
       return null;
     }
 
-    return zoneRepository.findByZoneCode(zoneCode).orElseThrow(
+    return zoneRepository.findByZoneCodeAndDestinationCode(zoneCode, destinationCode).orElseThrow(
             () -> new RuntimeException("No se encontró la zona con código: " + zoneCode));
   }
 

@@ -29,5 +29,5 @@ public interface ZoneRepository extends JpaRepository<Zone, Integer> {
    * @param zoneCode código de la zona
    * @return opcional con la zona encontrada, o vacío si no se encuentra
    */
-  Optional<Zone> findByZoneCode(Integer zoneCode);
+  Optional<Zone> findByZoneCodeAndDestinationCode(Integer zoneCode, String destinationCode);
 }

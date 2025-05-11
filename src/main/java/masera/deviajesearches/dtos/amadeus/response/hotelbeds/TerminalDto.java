@@ -2,8 +2,8 @@ package masera.deviajesearches.dtos.amadeus.response.hotelbeds;
 
 import lombok.Data;
 
-
 @Data
-public class RoomDTO {
-  private String roomCode;
+public class TerminalDto {
+  private String terminalCode;
+  private Integer distance;
 }
