@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class AddressDto {
-  private ContentDto content;
+  private String content;
   private String street;
   private String number;
 }

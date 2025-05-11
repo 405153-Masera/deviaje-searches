@@ -3,10 +3,6 @@ package masera.deviajesearches.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.clients.HotelClient;
-import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
-import masera.deviajesearches.dtos.amadeus.request.HotelRequest;
-import masera.deviajesearches.exceptions.AmadeusApiException;
-import masera.deviajesearches.services.interfaces.AmadeusTokenService;
 import masera.deviajesearches.services.interfaces.HotelSearchService;
 import org.springframework.stereotype.Service;
 
@@ -20,82 +16,5 @@ import org.springframework.stereotype.Service;
 public class HotelSearchServiceImpl implements HotelSearchService {
 
   private final HotelClient hotelClient;
-  private final AmadeusTokenService amadeusTokenService;
 
-  @Override
-  public Object findHotelsByCity(HotelRequest hotelRequest) {
-    log.info("Iniciando búsqueda de hoteles en la ciudad: {}", hotelRequest.getCityCode());
-
-    if (hotelRequest.getCityCode() == null || hotelRequest.getCityCode().isEmpty()) {
-      throw new AmadeusApiException("El código de ciudad es obligatorio", 400);
-    }
-
-    try {
-
-      String token = amadeusTokenService.getToken();
-      Object hotels = hotelClient.findsHotelsByCity(hotelRequest, token).block();
-      log.info("Búsqueda de hoteles completada con éxito.");
-
-      return hotels;
-    } catch (Exception e) {
-      log.error("Error al buscar hoteles: {}", e.getMessage());
-      throw e;
-    }
-  }
-
-  @Override
-  public Object findHotelOffers(HotelSearchRequest hotelSearchRequest) {
-    log.info("Iniciando búsqueda de ofertas de hoteles: {}", hotelSearchRequest);
-
-    if (hotelSearchRequest.getHotelIds() == null || hotelSearchRequest.getHotelIds().isEmpty()) {
-      throw new AmadeusApiException("Debe proporcionar al menos un ID de hotel", 400);
-    }
-
-    if (hotelSearchRequest.getCheckInDate() == null) {
-      throw new AmadeusApiException("La fecha de entrada es obligatoria", 400);
-    }
-
-    if (hotelSearchRequest.getCheckOutDate() == null) {
-      throw new AmadeusApiException("La fecha de salida es obligatoria", 400);
-    }
-
-    if (hotelSearchRequest.getAdults() == null || hotelSearchRequest.getAdults() < 1) {
-      throw new AmadeusApiException("Debe indicar al menos 1 adulto", 400);
-    }
-
-    try {
-
-      String token = amadeusTokenService.getToken();
-      Object offersHotels = hotelClient.findOffersByHotelsId(hotelSearchRequest, token).block();
-      log.info("Búsqueda de ofertas de hoteles completada con éxito.");
-
-      return offersHotels;
-    } catch (Exception e) {
-      log.error("Error al buscar las ofertas de los hoteles {}", e.getMessage());
-      throw e;
-
-    }
-  }
-
-  @Override
-  public Object getHotelOfferDetails(String offerId) {
-    log.info("Iniciando búsqueda de detalles de la oferta de hotel: {}", offerId);
-
-    if (offerId == null || offerId.isEmpty()) {
-      throw new AmadeusApiException("El ID de la oferta es obligatorio", 400);
-    }
-
-    try {
-
-      String token = amadeusTokenService.getToken();
-      Object detailsOffer = hotelClient.getHotelOfferDetails(offerId, token).block();
-      log.info("Búsqueda de detalles de la oferta de hotel completada con éxito.");
-
-      return detailsOffer;
-    } catch (Exception e) {
-      log.error("Error al buscar los detalles de la oferta del hotel {}", e.getMessage());
-      throw e;
-
-    }
-  }
 }

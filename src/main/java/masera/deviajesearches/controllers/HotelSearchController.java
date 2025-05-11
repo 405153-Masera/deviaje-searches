@@ -23,40 +23,4 @@ public class HotelSearchController {
 
   private final HotelSearchService hotelSearchService;
 
-  /**
-   * Controlador para buscar hoteles por ciudad.
-   *
-   * @param hotelRequest parámetros de búsqueda de hoteles.
-   * @return una respuesta con los resultados de la búsqueda.
-   */
-  @PostMapping("/by-city")
-  public ResponseEntity<Object> findHotelsByCity(@RequestBody HotelRequest hotelRequest) {
-    Object result = hotelSearchService.findHotelsByCity(hotelRequest);
-    return ResponseEntity.ok(result);
-  }
-
-  /**
-   * Controlador para buscar ofertas de hoteles.
-   *
-   * @param hotelSearchRequest parámetros de búsqueda de ofertas de hoteles.
-   * @return una respuesta con los resultados de la búsqueda.
-   */
-  @PostMapping("/offers")
-  public ResponseEntity<Object> findHotelOffers(
-          @RequestBody HotelSearchRequest hotelSearchRequest) {
-    Object result = hotelSearchService.findHotelOffers(hotelSearchRequest);
-    return ResponseEntity.ok(result);
-  }
-
-  /**
-   * Controlador para obtener detalles de una oferta de hotel.
-   *
-   * @param offerId identificador de la oferta de hotel.
-   * @return una respuesta con los detalles de la oferta.
-   */
-  @GetMapping("/offers/{offerId}")
-  public ResponseEntity<Object> getHotelOfferDetails(@PathVariable String offerId) {
-    Object result = hotelSearchService.getHotelOfferDetails(offerId);
-    return ResponseEntity.ok(result);
-  }
 }

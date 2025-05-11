@@ -17,9 +17,9 @@ public class Zone {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Integer id;
 
-  private String zoneCode;
+  private Integer zoneCode;
 
   private String name;
 
