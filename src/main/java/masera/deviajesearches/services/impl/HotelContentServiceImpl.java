@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.clients.HotelClient;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelDto;
 import masera.deviajesearches.entities.Country;
@@ -101,7 +102,7 @@ public class HotelContentServiceImpl implements HotelContentService {
     Map<String, Object> result = new HashMap<>();
 
     try {
-      Object response = hotelClient.getCountries(language).block();
+      CountriesResponse response = hotelClient.getCountries(language).block();
       int savedCount = processCountryResponse(response);
 
       result.put("status", "success");
@@ -181,52 +182,43 @@ public class HotelContentServiceImpl implements HotelContentService {
    * @param response respuesta de la API
    * @return número de países guardados
    */
-  private int processCountryResponse(Object response) {
+  private int processCountryResponse(CountriesResponse response) {
     int savedCount = 0;
 
     try {
-      if (response instanceof Map) {
-        Map<String, Object> responseMap = (Map<String, Object>) response;
+      if (response != null && response.getCountries() != null) {
+        for (CountriesResponse.CountryContent countryData : response.getCountries()) {
+          try {
+            String code = countryData.getCode();
 
-        if (responseMap.containsKey("countries") && responseMap.get("countries") instanceof List) {
-          List<Map<String, Object>> countries =
-                  (List<Map<String, Object>>) responseMap.get("countries");
+            if (code != null) {
+              Country country = countryRepository.findById(code)
+                      .orElse(new Country());
 
-          for (Map<String, Object> countryData : countries) {
-            try {
-              String code = (String) countryData.get("code");
+              country.setCode(code);
 
-              if (code != null) {
-                Country country = countryRepository.findById(code)
-                        .orElse(new Country());
-
-                country.setCode(code);
-
-                // Procesar descripción del país
-                if (countryData.containsKey("description")) {
-                  if (countryData.get("description") instanceof Map) {
-                    Map<String, Object> descMap =
-                            (Map<String, Object>) countryData.get("description");
-                    if (descMap.containsKey("content")) {
-                      country.setDescription((String) descMap.get("content"));
-                    }
-                  } else if (countryData.get("description") instanceof String) {
-                    country.setDescription((String) countryData.get("description"));
-                  }
-                }
-
-                // Si no hay descripción, usar el código como descripción
-                if (country.getDescription() == null || country.getDescription().isEmpty()) {
-                  country.setDescription("País " + code);
-                }
-
-                // Guardar el país
-                countryRepository.save(country);
-                savedCount++;
+              // Procesar descripción del país
+              if (countryData.getDescription() != null &&
+                      countryData.getDescription().getContent() != null) {
+                country.setDescription(countryData.getDescription().getContent());
+              } else {
+                country.setDescription("País " + code);
               }
-            } catch (Exception e) {
-              log.error("Error al procesar país: {}", e.getMessage(), e);
+
+              // Guardar el país
+              countryRepository.save(country);
+              savedCount++;
+
+              // También procesar estados si existen
+              if (countryData.getStates() != null && !countryData.getStates().isEmpty()) {
+                for (CountriesResponse.StateContent stateData : countryData.getStates()) {
+                  processState(stateData, country);
+                }
+              }
             }
+
+          } catch (Exception e) {
+              log.error("Error al procesar país: {}", e.getMessage(), e);
           }
         }
       }
@@ -236,6 +228,28 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     log.info("Procesados {} países", savedCount);
     return savedCount;
+  }
+
+  private void processState(CountriesResponse.StateContent stateData, Country country) {
+    try {
+      if (stateData.getCode() != null) {
+        State state = stateRepository.findByCode(stateData.getCode())
+                .orElse(new State());
+
+        state.setCode(stateData.getCode());
+        state.setCountry(country);
+
+        if (stateData.getName() != null && stateData.getName().getContent() != null) {
+          state.setName(stateData.getName().getContent());
+        } else {
+          state.setName("Estado " + stateData.getCode());
+        }
+
+        stateRepository.save(state);
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar estado: {}", e.getMessage(), e);
+    }
   }
 
   /**

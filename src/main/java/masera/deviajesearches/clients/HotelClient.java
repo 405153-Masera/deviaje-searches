@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.configs.HotelbedsConfig;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.utils.AmadeusErrorHandler;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -121,7 +122,7 @@ public class HotelClient {
    * @param language idioma
    * @return Mono con la respuesta de países
    */
-  public Mono<Object> getCountries(String language) {
+  public Mono<CountriesResponse> getCountries(String language) {
     log.info("Obteniendo países en idioma {}", language);
 
     String uri = UriComponentsBuilder.fromPath(LOCATIONS_ENDPOINT + "/countries")
@@ -132,7 +133,7 @@ public class HotelClient {
             .uri(hotelbedsConfig.getBaseUrl() + uri)
             .headers(this::addHotelbedsHeaders)
             .retrieve()
-            .bodyToMono(Object.class)
+            .bodyToMono(CountriesResponse.class)
             .doOnSuccess(response -> log.info("Países obtenidos exitosamente"))
             .doOnError(error -> log.error("Error al obtener países: {}", error.getMessage()));
   }
@@ -167,7 +168,7 @@ public class HotelClient {
   }
 
   private void addHotelbedsHeaders(HttpHeaders headers) {
-    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+    long timestamp = System.currentTimeMillis() / 1000;
     String signature = DigestUtils.sha256Hex(hotelbedsConfig.getApiKey()
             + hotelbedsConfig.getApiSecret() + timestamp);
 
