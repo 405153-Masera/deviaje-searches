@@ -46,7 +46,7 @@ public class FlightClient {
     String uri = getUrl(flightSearchRequest);
 
     return webClient.get()
-            .uri(uri)
+            .uri(amadeusConfig.getBaseUrl() + uri)
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .retrieve()
             .bodyToMono(Object.class)
@@ -92,12 +92,11 @@ public class FlightClient {
    */
   public Mono<Object> searchCities(String keyword, String token) {
 
-    String uri = UriComponentsBuilder.fromPath(amadeusConfig.getBaseUrl()
-                    + LOCATIONS_PATH + "/cities")
+    String uri = UriComponentsBuilder.fromPath(LOCATIONS_PATH + "/cities")
             .queryParam("keyword", keyword).build().toUriString();
 
     return webClient.get()
-            .uri(uri)
+            .uri(amadeusConfig.getBaseUrl() + uri)
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .retrieve()
             .bodyToMono(Object.class)
@@ -139,7 +138,7 @@ public class FlightClient {
    * @return la URL construida.
    */
   private String getUrl(FlightSearchRequest flightSearchRequest) {
-    return UriComponentsBuilder.fromPath(amadeusConfig.getBaseUrl() + FLIGHT_OFFERS_URL_V2)
+    return UriComponentsBuilder.fromPath(FLIGHT_OFFERS_URL_V2)
             .queryParam("originLocationCode", flightSearchRequest.getOrigin())
             .queryParam("destinationLocationCode", flightSearchRequest.getDestination())
             .queryParam("departureDate", flightSearchRequest.getDepartureDate())

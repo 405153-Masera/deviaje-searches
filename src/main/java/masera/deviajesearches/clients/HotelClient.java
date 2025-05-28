@@ -17,6 +17,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 /**
  * Cliente para consumir el microservicio de hoteles de la API de Amadeus.
  */
@@ -71,9 +73,14 @@ public class HotelClient {
 
     // Crear el cuerpo de la solicitud
     java.util.Map<String, Object> request = new java.util.HashMap<>();
-    java.util.List<String> rateKeys = new java.util.ArrayList<>();
-    rateKeys.add(rateKey);
-    request.put("rooms", rateKeys);
+    java.util.List<Map<String, String>> rooms = new java.util.ArrayList<>();
+
+    // Crear un objeto para cada rateKey
+    java.util.Map<String, String> room = new java.util.HashMap<>();
+    room.put("rateKey", rateKey);
+    rooms.add(room);
+
+    request.put("rooms", rooms);
 
     return webClient
             .post()

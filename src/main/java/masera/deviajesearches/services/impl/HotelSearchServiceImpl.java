@@ -77,7 +77,6 @@ public class HotelSearchServiceImpl implements HotelSearchService {
     log.info("Verificando tarifa con clave: {}", rateKey);
 
     try {
-      // Llamar al método del cliente para verificar la tarifa
       return hotelClient.checkRates(rateKey).block();
     } catch (Exception e) {
       log.error("Error al verificar tarifa: {}", e.getMessage(), e);

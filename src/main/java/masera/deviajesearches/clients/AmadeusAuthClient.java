@@ -2,6 +2,7 @@ package masera.deviajesearches.clients;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import masera.deviajesearches.configs.AmadeusConfig;
 import masera.deviajesearches.dtos.amadeus.response.AmadeusTokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -21,6 +22,8 @@ import reactor.core.publisher.Mono;
 public class AmadeusAuthClient {
 
   private final WebClient webClient;
+
+  private final AmadeusConfig amadeusConfig;
 
   @Value("${amadeus.api.key}")
   private String apiKey;
@@ -49,7 +52,7 @@ public class AmadeusAuthClient {
     formData.add("client_secret", apiSecret);
 
     return webClient.post()
-            .uri(tokenUrl)
+            .uri(amadeusConfig.getBaseUrl() + tokenUrl)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED) //establecemos el tipo de contenido
             .body(BodyInserters.fromFormData(formData))
             .retrieve() //realizamos la solicitud
