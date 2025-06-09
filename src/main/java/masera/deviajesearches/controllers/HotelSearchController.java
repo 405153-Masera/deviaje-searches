@@ -62,17 +62,4 @@ public class HotelSearchController {
     Object response = hotelSearchService.checkRates(rateKey);
     return ResponseEntity.ok(response);
   }
-
-  /**
-   * Crea una reserva de hotel.
-   *
-   * @param bookingRequest solicitud de reserva
-   * @return confirmación de la reserva
-   */
-  @PostMapping("/booking")
-  public ResponseEntity<Object> createBooking(@RequestBody Object bookingRequest) {
-    Object response = hotelSearchService.createBooking(bookingRequest);
-    return ResponseEntity.ok(response);
-  }
-
 }

@@ -32,13 +32,14 @@ public class HotelContentController {
    * @return lista de hoteles cargados
    */
   @GetMapping("/load")
-  public ResponseEntity<List<Object>> loadHotels(
+  public ResponseEntity<String> loadHotels(
           @RequestParam(defaultValue = "1") int from,
           @RequestParam(defaultValue = "1000") int to,
           @RequestParam(defaultValue = "CAS") String language) {
 
     List<Object> hotels = hotelContentService.loadHotels(from, to, language);
-    return ResponseEntity.ok(hotels);
+    return ResponseEntity.ok("Hoteles cargados: " + hotels.size()
+            + " desde " + from + " hasta " + to + " en idioma " + language);
   }
 
   /**
@@ -69,7 +70,7 @@ public class HotelContentController {
    */
   @PostMapping("/countries/load")
   public ResponseEntity<Map<String, Object>> loadCountries(
-          @RequestParam(defaultValue = "ENG") String language) {
+          @RequestParam(defaultValue = "CAS") String language) {
 
     Map<String, Object> result = hotelContentService.loadCountries(language);
     return ResponseEntity.ok(result);

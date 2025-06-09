@@ -21,13 +21,13 @@ public class HotelDto {
   private String chainCode;
   private String accommodationTypeCode;
   private List<String> boards;
-  private List<Integer> segments;
+  private List<Integer> segmentCodes;
   private AddressDto address;
   private String postalCode;
   private ContentDto city;
   private String email;
   private String license;
-  private Long giataCode;
+  private Integer giataCode;
   private List<PhoneDto> phones;
   private List<RoomDto> rooms;
   private List<FacilityDto> facilities;
@@ -35,6 +35,6 @@ public class HotelDto {
   private List<TerminalDto> terminals;
   private String web;
   private String lastUpdate;
-  private String s2C;
+  private String S2C;
   private Integer ranking;
 }

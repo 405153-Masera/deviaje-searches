@@ -467,6 +467,7 @@ public class HotelContentServiceImpl implements HotelContentService {
     hotel.setZoneCode(zone != null ? zone.getZoneCode() : null);
     hotel.setLatitude(hotelDto.getCoordinates().getLatitude());
     hotel.setLongitude(hotelDto.getCoordinates().getLongitude());
+    hotel.setGiataCode(hotelDto.getGiataCode());
 
     // Categoría y cadena
     hotel.setCategoryCode(hotelDto.getCategoryCode());
@@ -474,7 +475,10 @@ public class HotelContentServiceImpl implements HotelContentService {
     hotel.setChainCode(hotelDto.getChainCode());
     hotel.setAccommodationTypeCode(hotelDto.getAccommodationTypeCode());
 
-    hotel.setAddress(hotelDto.getAddress().getContent());
+    if (hotelDto.getAddress() != null) {
+      hotel.setAddress(hotelDto.getAddress().getContent());
+    }
+
     hotel.setCity(hotelDto.getCity().getContent());
 
     hotel.setPostalCode(hotelDto.getPostalCode());
@@ -491,9 +495,7 @@ public class HotelContentServiceImpl implements HotelContentService {
         hotel.setBoardCodes(objectMapper.writeValueAsString(hotelDto.getBoards()));
       }
 
-      if (hotelDto.getSegments() != null) {
-        hotel.setSegmentCodes(objectMapper.writeValueAsString(hotelDto.getSegments()));
-      }
+      hotel.setSegmentCodes(hotelDto.getSegmentCodes());
 
       if (hotelDto.getFacilities() != null) {
         hotel.setFacilities(objectMapper.writeValueAsString(hotelDto.getFacilities()));
