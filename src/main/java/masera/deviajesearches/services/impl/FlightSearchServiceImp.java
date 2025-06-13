@@ -35,7 +35,6 @@ public class FlightSearchServiceImp implements FlightSearchService {
 
     log.info("Iniciando búsqueda de vuelos con parámetros: {}", flightSearchRequest);
     try {
-      flightSearchRequest.setMaxResults(60); //Esta línea después debo borrar
       String token = amadeusTokenService.getToken();
       Object flights = flightClient.searchFlightOffers(flightSearchRequest, token).block();
       log.info("Búsqueda de vuelos completada con éxito.");

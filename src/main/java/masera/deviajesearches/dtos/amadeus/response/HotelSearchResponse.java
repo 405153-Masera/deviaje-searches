@@ -57,10 +57,30 @@ public class HotelSearchResponse {
     private String rateType;
     private Double net;
     private Double discount;
+
+    private Integer adults;
+    private Integer children;
+    private String childrenAges; // Edades separadas por comas "10,8"
+    private Integer rooms;
+    private Integer allotment;
+    private String rateCommentsId;
+    private String paymentType;
+    private Boolean packaging;
+    private List<Offer> offers;
+
     private List<CancellationPolicy> cancellationPolicies;
     private String boardCode;
     private String boardName;
     private List<Tax> taxes;
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class Offer {
+    private String code;
+    private String name;
+    private String amount; // Puede ser negativo como "-63.95"
   }
 
   @Data

@@ -24,7 +24,7 @@ public class FlightSearchRequest {
   private Integer children;
   private Integer infants;
   private String travelClass; // ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST
-  private Integer maxResults;
+  private Integer maxResults = 40;
   private String currency;
   private Boolean nonStop;
 }
