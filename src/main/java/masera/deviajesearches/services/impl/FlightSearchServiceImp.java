@@ -64,23 +64,6 @@ public class FlightSearchServiceImp implements FlightSearchService {
   }
 
   @Override
-  public Object verifyFlightOfferPricing(Object flightOffer) {
-    log.info("Iniciando la verificación de las ofertas de vuelo");
-    try {
-      String token = amadeusTokenService.getToken();
-
-      Object response = this.flightClient
-                      .verifyFlightOfferPrice(flightOffer, token).block();
-
-      log.info("Verificación de las ofertas finalizadas");
-      return response;
-    } catch (Exception e) {
-      log.error("Error al verificar las ofertas de vuelo {}", e.getMessage());
-      throw e;
-    }
-  }
-
-  @Override
   public List<CityDto> searchCities(String keyword) {
     String token = amadeusTokenService.getToken();
     Object response = flightClient.searchCities(keyword, token).block();

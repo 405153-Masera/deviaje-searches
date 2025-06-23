@@ -72,30 +72,6 @@ public class HotelSearchServiceImpl implements HotelSearchService {
     }
   }
 
-  @Override
-  public Object checkRates(String rateKey) {
-    log.info("Verificando tarifa con clave: {}", rateKey);
-
-    try {
-      return hotelClient.checkRates(rateKey).block();
-    } catch (Exception e) {
-      log.error("Error al verificar tarifa: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al verificar tarifa", e);
-    }
-  }
-
-  @Override
-  public Object createBooking(Object bookingRequest) {
-    log.info("Creando reserva de hotel");
-
-    try {
-      return hotelClient.createBooking(bookingRequest).block();
-    } catch (Exception e) {
-      log.error("Error al crear reserva: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al crear reserva", e);
-    }
-  }
-
   /**
    * Procesa los campos JSON de la entidad Hotel para el DTO.
    *

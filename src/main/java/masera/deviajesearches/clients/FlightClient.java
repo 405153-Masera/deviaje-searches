@@ -106,32 +106,6 @@ public class FlightClient {
   }
 
   /**
-   * Verifica y devuelve una oferta de vuelo con el precio actualizado.
-   *
-   * @param flightOffer objeto que contiene la oferta de vuelo a verificar
-   * @param token token de autenticación
-   * @return oferta de vuelo con precio actualizado
-   */
-  public Mono<Object> verifyFlightOfferPrice(Object flightOffer, String token) {
-    log.info("Verificando el precio de la oferta de vuelo");
-
-    String uri = amadeusConfig.getBaseUrl() + FLIGHT_OFFERS_URL_V1 + "/pricing";
-
-    return webClient.post()
-            .uri(uri)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(flightOffer)
-            .retrieve()
-            .bodyToMono(Object.class)
-            .doOnSuccess(response -> log.info("Precio verificado para la oferta"))
-            .doOnError(error -> log.error("Error al verificar el precio: {}", error.getMessage()))
-            .onErrorResume(WebClientResponseException.class, e -> {
-              throw errorHandler.handleAmadeusError(e);
-            });
-  }
-
-  /**
    * Construye la URL para la búsqueda de vuelos.
    *
    * @param flightSearchRequest representa los parámetros de búsqueda de vuelos.

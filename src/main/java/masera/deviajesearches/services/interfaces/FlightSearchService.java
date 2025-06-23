@@ -28,14 +28,6 @@ public interface FlightSearchService {
   Object searchFlightOfferUpsell(Object flightOffer);
 
   /**
-   * Verifica y actualiza el precio de una oferta de vuelo.
-   *
-   * @param flightOffer objeto que contiene la oferta de vuelo a verificar
-   * @return oferta de vuelo con precio actualizado
-   */
-  Object verifyFlightOfferPricing(Object flightOffer);
-
-  /**
    * Busca ciudades por palabra clave.
    *
    * @param keyword Palabra clave para buscar.

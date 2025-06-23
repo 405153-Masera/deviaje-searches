@@ -49,18 +49,6 @@ public class FlightSearchController {
   }
 
   /**
-   * Endpoint para verificar y actualizar el precio de una oferta de vuelo.
-   *
-   * @param request objeto que contiene la oferta de vuelo a verificar
-   * @return oferta de vuelo con precio actualizado
-   */
-  @PostMapping("/pricing")
-  public ResponseEntity<Object> verifyFlightPricing(@RequestBody Object request) {
-    Object result = flightSearchService.verifyFlightOfferPricing(request);
-    return ResponseEntity.ok(result);
-  }
-
-  /**
    * Endpoint para buscar ciudades y aeropuertos.
    *
    * @param keyword Palabra clave para buscar.

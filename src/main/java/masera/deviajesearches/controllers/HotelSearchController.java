@@ -50,16 +50,4 @@ public class HotelSearchController {
     HotelResponseDto hotel = hotelSearchService.getHotelDetails(hotelCode);
     return ResponseEntity.ok(hotel);
   }
-
-  /**
-   * Verifica la disponibilidad y precio de una tarifa.
-   *
-   * @param rateKey clave de la tarifa a verificar
-   * @return información actualizada de la tarifa
-   */
-  @GetMapping("/checkrates/{rateKey}")
-  public ResponseEntity<Object> checkRates(@PathVariable String rateKey) {
-    Object response = hotelSearchService.checkRates(rateKey);
-    return ResponseEntity.ok(response);
-  }
 }
