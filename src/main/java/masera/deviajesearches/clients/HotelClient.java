@@ -51,7 +51,15 @@ public class HotelClient {
             .retrieve()
             .bodyToMono(HotelSearchResponse.class)
             .doOnSuccess(response -> log.info("Búsqueda de hoteles completada exitosamente"))
-            .doOnError(error -> log.error("Error al buscar hoteles: {}", error.getMessage()))
+            .doOnError(error -> {
+              if (error instanceof WebClientResponseException) {
+                WebClientResponseException webError = (WebClientResponseException) error;
+                log.error("Error al crear reserva de hotel - Status: {}, Body: {}",
+                        webError.getStatusCode(), webError.getResponseBodyAsString());
+              } else {
+                log.error("Error al crear reserva de vuelo: {}", error.getMessage());
+              }
+            })
             .onErrorResume(WebClientResponseException.class, e -> {
               log.error("Error de respuesta de Hotelbeds: {}", e.getResponseBodyAsString());
               throw errorHandler.handleAmadeusError(e);

@@ -3,8 +3,8 @@ package masera.deviajesearches.controllers;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
-import masera.deviajesearches.entities.Destination;
 import masera.deviajesearches.services.interfaces.HotelContentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -104,13 +104,14 @@ public class HotelContentController {
   }
 
   /**
-   * Obtiene todos los destinos guardados en la base de datos.
+   * Endpoint para buscar destinos de hoteles.
    *
-   * @return lista de destinos
+   * @param keyword Palabra clave para buscar.
+   * @return Resultados de la búsqueda.
    */
   @GetMapping("/destinations")
-  public ResponseEntity<List<Destination>> getAllDestinations() {
-    List<Destination> destinations = hotelContentService.getAllDestinations();
-    return ResponseEntity.ok(destinations);
+  public ResponseEntity<List<CityDto>> searchDestinations(@RequestParam String keyword) {
+    List<CityDto> result = hotelContentService.searchDestinations(keyword);
+    return ResponseEntity.ok(result);
   }
 }

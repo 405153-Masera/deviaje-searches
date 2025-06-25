@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.clients.HotelClient;
+import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
@@ -90,10 +93,28 @@ public class HotelContentServiceImpl implements HotelContentService {
     return countryDtos;
   }
 
+  /**
+   * Busca destinos por nombre.
+   *
+   * @param keyword palabra clave para buscar destinos
+   * @return lista de destinos que coinciden con la palabra clave.
+   */
   @Override
-  public List<Destination> getAllDestinations() {
-    log.info("Obteniendo todos los destinos");
-    return destinationRepository.findAll();
+  public List<CityDto> searchDestinations(String keyword) {
+    log.info("Buscando destinos con keyword: {}", keyword);
+    List<Destination> destinations = destinationRepository.findByNameContainingIgnoreCaseWithCountry(keyword);
+    return destinations.stream()
+            .map(this::mapDestinationToCityDto)
+            .collect(Collectors.toList());
+  }
+
+  private CityDto mapDestinationToCityDto(Destination destination) {
+    CityDto cityDto = new CityDto();
+    cityDto.setName(destination.getName());
+    cityDto.setIataCode(destination.getCode());
+    cityDto.setCountry(destination.getCountry() != null
+            ? destination.getCountry().getDescription() : "País no especificado");
+    return cityDto;
   }
 
   @Override
@@ -460,13 +481,22 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     hotel.setCode(hotelDto.getCode());
     hotel.setName(hotelDto.getName().getContent());
-    hotel.setDescription(hotelDto.getDescription().getContent());
+
+    if (hotelDto.getDescription() != null
+            && hotelDto.getDescription().getContent() != null) {
+      hotel.setDescription(hotelDto.getDescription().getContent());
+    }
+
     hotel.setCountryCode(country != null ? country.getCode() : null);
     hotel.setStateCode(state != null ? state.getCode() : null);
     hotel.setDestinationCode(destination != null ? destination.getCode() : null);
     hotel.setZoneCode(zone != null ? zone.getZoneCode() : null);
-    hotel.setLatitude(hotelDto.getCoordinates().getLatitude());
-    hotel.setLongitude(hotelDto.getCoordinates().getLongitude());
+
+    if (hotelDto.getCoordinates() != null) {
+      hotel.setLatitude(hotelDto.getCoordinates().getLatitude());
+      hotel.setLongitude(hotelDto.getCoordinates().getLongitude());
+    }
+
     hotel.setGiataCode(hotelDto.getGiataCode());
 
     // Categoría y cadena

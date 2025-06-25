@@ -2,8 +2,8 @@ package masera.deviajesearches.services.interfaces;
 
 import java.util.List;
 import java.util.Map;
+import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
-import masera.deviajesearches.entities.Destination;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,12 +40,14 @@ public interface HotelContentService {
    */
   List<CountryDto> getAllCountries();
 
+
   /**
-   * Obtiene todos los destinos de la base de datos.
+   * Busca países por un término de búsqueda.
    *
-   * @return lista de destinos
+   * @param keyword término de búsqueda
+   * @return lista de países que coinciden con el término de búsqueda
    */
-  List<Destination> getAllDestinations();
+  List<CityDto> searchDestinations(String keyword);
 
   /**
    * Carga países desde la API de Hotelbeds y los guarda en la base de datos.

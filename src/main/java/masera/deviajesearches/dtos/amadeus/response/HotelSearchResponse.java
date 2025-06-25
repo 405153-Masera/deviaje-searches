@@ -71,7 +71,6 @@ public class HotelSearchResponse {
     private List<CancellationPolicy> cancellationPolicies;
     private String boardCode;
     private String boardName;
-    private List<Tax> taxes;
   }
 
   @Data
@@ -91,12 +90,12 @@ public class HotelSearchResponse {
     private String from;
   }
 
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class Tax {
-    private Boolean included;
-    private Double amount;
-    private String currency;
-  }
+  //@Data
+  //@NoArgsConstructor
+  //@AllArgsConstructor
+  //public static class Tax {
+  //  private Boolean included;
+  //  private Double amount;
+  //  private String currency;
+  //}
 }
