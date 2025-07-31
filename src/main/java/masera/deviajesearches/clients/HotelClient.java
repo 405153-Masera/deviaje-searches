@@ -52,8 +52,7 @@ public class HotelClient {
             .bodyToMono(HotelSearchResponse.class)
             .doOnSuccess(response -> log.info("Búsqueda de hoteles completada exitosamente"))
             .doOnError(error -> {
-              if (error instanceof WebClientResponseException) {
-                WebClientResponseException webError = (WebClientResponseException) error;
+              if (error instanceof WebClientResponseException webError) {
                 log.error("Error al crear reserva de hotel - Status: {}, Body: {}",
                         webError.getStatusCode(), webError.getResponseBodyAsString());
               } else {
