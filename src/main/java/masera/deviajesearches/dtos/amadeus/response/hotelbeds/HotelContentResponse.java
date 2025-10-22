@@ -10,6 +10,6 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HotelContentResponse {
+
   private List<HotelDto> hotels;
 }
-

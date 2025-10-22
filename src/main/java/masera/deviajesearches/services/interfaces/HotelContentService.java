@@ -18,20 +18,10 @@ public interface HotelContentService {
    * @param from índice inicial
    * @param to índice final
    * @param language idioma
-   * @return lista de hoteles cargados
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de hoteles cargados
    */
-  List<Object> loadHotels(int from, int to, String language);
-
-  /**
-   * Actualiza hoteles desde la API de Hotelbeds desde una fecha específica.
-   *
-   * @param from índice inicial
-   * @param to índice final
-   * @param language idioma
-   * @param lastUpdateTime fecha de última actualización
-   * @return lista de hoteles actualizados
-   */
-  List<Object> updateHotels(int from, int to, String language, String lastUpdateTime);
+  Integer loadHotels(int from, int to, String language, String lastUpdateTime);
 
   /**
    * Obtiene todos los países de la base de datos.
@@ -53,17 +43,22 @@ public interface HotelContentService {
    * Carga países desde la API de Hotelbeds y los guarda en la base de datos.
    *
    * @param language idioma
-   * @return mapa con la cantidad de países cargados y otros datos relevantes
+   * @param from índice inicial
+   * @param to índice final
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de países cargados
    */
-  Map<String, Object> loadCountries(String language);
+  Integer loadCountries(int from, int to, String language, String lastUpdateTime);
 
   /**
    * Carga destinos desde la API de Hotelbeds y los guarda en la base de datos.
    *
-   * @param countryCode código de país opcional (puede ser null)
+   * @param from índice inicial
+   * @param to índice final
+   * @param lastUpdateTime (Opcional) fecha de última actualización
    * @param language idioma
-   * @return mapa con la cantidad de destinos cargados y otros datos relevantes
+   * @return cantidad de destinos cargados
    */
-  Map<String, Object> loadDestinations(String countryCode, String language);
+  Integer loadDestinations(int from, int to, String language, String lastUpdateTime);
 }
 

@@ -5,16 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO que representa la dirección de un hotel.
+ * DTO que representa una cadena hotelera.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddressDto {
+public class ChainDto {
 
-  private String content;
+  private String code;
 
-  private String street;
-
-  private String number;
+  private ContentDto description;
 }

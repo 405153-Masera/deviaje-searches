@@ -1,13 +1,10 @@
 package masera.deviajesearches.entities;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,8 +27,9 @@ public class Country {
   private String isoCode;
 
   @Column(columnDefinition = "TEXT")
-  private String description;
+  private String name;
 
-  @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<State> states = new ArrayList<>();
+  @Lob
+  @Column(columnDefinition = "JSON")
+  private String states;
 }

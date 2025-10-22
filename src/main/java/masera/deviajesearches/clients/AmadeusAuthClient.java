@@ -34,7 +34,6 @@ public class AmadeusAuthClient {
   @Value("${amadeus.api.token-url}")
   private String tokenUrl;
 
-
   /**
    * Metodo que realiza una solicitud POST a la API de Amadeus
    * para obtener un token de autenticación.

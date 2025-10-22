@@ -5,16 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO que representa la dirección de un hotel.
+ * DTO que representa un comodín de habitación.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddressDto {
+public class WildcardDto {
 
-  private String content;
+  private String roomType;
 
-  private String street;
+  private String roomCode;
 
-  private String number;
+  private String characteristicCode;
+
+  private ContentDto hotelRoomDescription;
 }

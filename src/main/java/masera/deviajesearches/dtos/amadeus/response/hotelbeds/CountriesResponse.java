@@ -1,25 +1,32 @@
 package masera.deviajesearches.dtos.amadeus.response.hotelbeds;
 
-
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO que representa la respuesta de la API de Hotelbeds para obtener países.
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CountriesResponse {
 
   private List<CountryContent> countries;
-  private AuditData auditData;
 
   /**
    * Clase interna que representa los datos de los países.
    */
   @Data
   public static class CountryContent {
+
     private String code;
+
     private ContentDto description;
+
+    private String isoCode;
+
     private List<StateContent> states;
   }
 

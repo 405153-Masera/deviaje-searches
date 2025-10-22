@@ -3,9 +3,7 @@ package masera.deviajesearches.services.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -16,17 +14,15 @@ import masera.deviajesearches.dtos.amadeus.response.CountryDto;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.destinations.DestinationsResponse;
 import masera.deviajesearches.entities.Country;
 import masera.deviajesearches.entities.Destination;
 import masera.deviajesearches.entities.Hotel;
-import masera.deviajesearches.entities.State;
-import masera.deviajesearches.entities.Zone;
 import masera.deviajesearches.repositories.CountryRepository;
 import masera.deviajesearches.repositories.DestinationRepository;
 import masera.deviajesearches.repositories.HotelRepository;
-import masera.deviajesearches.repositories.StateRepository;
-import masera.deviajesearches.repositories.ZoneRepository;
 import masera.deviajesearches.services.interfaces.HotelContentService;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,40 +35,37 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class HotelContentServiceImpl implements HotelContentService {
 
-
   private final HotelClient hotelClient;
-  private final ObjectMapper objectMapper;
-  private final HotelRepository hotelRepository;
-  private final CountryRepository countryRepository;
-  private final StateRepository stateRepository;
-  private final DestinationRepository destinationRepository;
-  private final ZoneRepository zoneRepository;
 
+  private final ObjectMapper objectMapper;
+
+  private final ModelMapper modelMapper;
+
+  private final HotelRepository hotelRepository;
+
+  private final CountryRepository countryRepository;
+
+  private final DestinationRepository destinationRepository;
+
+  /**
+   * Carga hoteles desde la API de Hotelbeds.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @return lista de hoteles cargados
+   */
   @Override
-  public List<Object> loadHotels(int from, int to, String language) {
+  public Integer loadHotels(int from, int to, String language, String lastUpdateTime) {
     log.info("Cargando hoteles desde {} hasta {} en idioma {}", from, to, language);
 
     try {
-      HotelContentResponse response = hotelClient.getHotelContent(from, to, language).block();
+      HotelContentResponse response = hotelClient
+              .getHotelContent(from, to, language, lastUpdateTime).block();
       return saveHotels(response);
     } catch (Exception e) {
       log.error("Error al cargar hoteles: {}", e.getMessage(), e);
       throw new RuntimeException("Error al cargar hoteles", e);
-    }
-  }
-
-  @Override
-  public List<Object> updateHotels(int from, int to, String language, String lastUpdateTime) {
-    log.info("Actualizando hoteles desde {} hasta {} en idioma {} desde {}",
-            from, to, language, lastUpdateTime);
-
-    try {
-      HotelContentResponse response = hotelClient
-              .getHotelContentUpdates(from, to, language, lastUpdateTime).block();
-      return saveHotels(response);
-    } catch (Exception e) {
-      log.error("Error al actualizar hoteles: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al actualizar hoteles", e);
     }
   }
 
@@ -84,7 +77,8 @@ public class HotelContentServiceImpl implements HotelContentService {
     List<CountryDto> countryDtos = new ArrayList<>();
 
     for (Country country : countries) {
-      countryDtos.add(new CountryDto(country.getCode(), country.getDescription()));
+      countryDtos.add(new CountryDto(
+              country.getCode(), country.getName(), country.getIsoCode()));
     }
 
     return countryDtos;
@@ -99,7 +93,8 @@ public class HotelContentServiceImpl implements HotelContentService {
   @Override
   public List<CityDto> searchDestinations(String keyword) {
     log.info("Buscando destinos con keyword: {}", keyword);
-    List<Destination> destinations = destinationRepository.findByNameContainingIgnoreCaseWithCountry(keyword);
+    List<Destination> destinations = destinationRepository
+            .findByNameContainingIgnoreCaseWithCountry(keyword);
     return destinations.stream()
             .map(this::mapDestinationToCityDto)
             .collect(Collectors.toList());
@@ -110,55 +105,40 @@ public class HotelContentServiceImpl implements HotelContentService {
     cityDto.setName(destination.getName());
     cityDto.setIataCode(destination.getCode());
     cityDto.setCountry(destination.getCountry() != null
-            ? destination.getCountry().getDescription() : "País no especificado");
+            ? destination.getCountry().getName() : "País no especificado");
     return cityDto;
   }
 
   @Override
-  public Map<String, Object> loadCountries(String language) {
+  public Integer loadCountries(
+          int from, int to, String language, String lastUpdateTime) {
+
     log.info("Cargando países en idioma {}", language);
-    Map<String, Object> result = new HashMap<>();
 
     try {
-      CountriesResponse response = hotelClient.getCountries(language).block();
-      int savedCount = processCountryResponse(response);
+      CountriesResponse response = hotelClient.getCountries(
+              from, to, language, lastUpdateTime).block();
+      return processCountryResponse(response).size();
 
-      result.put("status", "success");
-      result.put("message", "Países cargados exitosamente");
-      result.put("count", savedCount);
-
-      return result;
     } catch (Exception e) {
       log.error("Error al cargar países: {}", e.getMessage(), e);
-
-      result.put("status", "error");
-      result.put("message", "Error al cargar países: " + e.getMessage());
-
-      return result;
+      throw new RuntimeException("Error al cargar los países", e);
     }
   }
 
   @Override
-  public Map<String, Object> loadDestinations(String countryCode, String language) {
-    log.info("Cargando destinos para país {} en idioma {}", countryCode, language);
-    Map<String, Object> result = new HashMap<>();
+  public Integer loadDestinations(
+          int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando destinos en idioma {}", language);
 
     try {
-      Object response = hotelClient.getDestinations(countryCode, language).block();
-      int savedCount = processDestinationResponse(response);
+      DestinationsResponse response = hotelClient.getDestinations(
+              from, to, language, lastUpdateTime).block();
+      return processDestinationResponse(response);
 
-      result.put("status", "success");
-      result.put("message", "Destinos cargados exitosamente");
-      result.put("count", savedCount);
-
-      return result;
     } catch (Exception e) {
       log.error("Error al cargar destinos: {}", e.getMessage(), e);
-
-      result.put("status", "error");
-      result.put("message", "Error al cargar destinos: " + e.getMessage());
-
-      return result;
+      throw new RuntimeException("Error al cargar los destinos", e);
     }
   }
 
@@ -168,19 +148,16 @@ public class HotelContentServiceImpl implements HotelContentService {
    * @param response respuesta de la API
    * @return lista hoteles guardados
    */
-  private List<Object> saveHotels(HotelContentResponse response) {
-    List<Object> result = new ArrayList<>();
+  private Integer saveHotels(HotelContentResponse response) {
+    List<Object> results = new ArrayList<>();
 
     try {
       if (response != null && response.getHotels() != null) {
         for (HotelDto hotelDto : response.getHotels()) {
           try {
-            Country country = getCountry(hotelDto.getCountryCode());
-            State state = getState(hotelDto.getStateCode());
-            Destination destination = getDestination(hotelDto.getDestinationCode());
-            Zone zone = getZone(hotelDto.getZoneCode(), hotelDto.getDestinationCode());
-            Hotel hotel = saveHotel(hotelDto, country, state, destination, zone);
-            result.add(hotel);
+
+            Hotel hotel = saveHotel(hotelDto);
+            results.add(hotel);
           } catch (Exception e) {
             log.error("Error al procesar hotel {}: {}", hotelDto.getCode(), e.getMessage(), e);
           }
@@ -190,8 +167,8 @@ public class HotelContentServiceImpl implements HotelContentService {
       log.error("Error al procesar respuesta de contenido de hoteles: {}", e.getMessage(), e);
     }
 
-    log.info("Procesados {} hoteles", result.size());
-    return result;
+    log.info("Procesados {} hoteles", results.size());
+    return results.size();
   }
 
   /**
@@ -200,8 +177,8 @@ public class HotelContentServiceImpl implements HotelContentService {
    * @param response respuesta de la API
    * @return número de países guardados
    */
-  private int processCountryResponse(CountriesResponse response) {
-    int savedCount = 0;
+  private List<CountryDto> processCountryResponse(CountriesResponse response) {
+    List<CountryDto> countryDtos = new ArrayList<>();
 
     try {
       if (response != null && response.getCountries() != null) {
@@ -210,29 +187,20 @@ public class HotelContentServiceImpl implements HotelContentService {
             String code = countryData.getCode();
 
             if (code != null) {
-              Country country = countryRepository.findById(code)
-                      .orElse(new Country());
-
+              Country country = new Country();
               country.setCode(code);
+              country.setIsoCode(countryData.getIsoCode());
 
-              // Procesar descripción del país
               if (countryData.getDescription() != null
                       && countryData.getDescription().getContent() != null) {
-                country.setDescription(countryData.getDescription().getContent());
-              } else {
-                country.setDescription("País " + code);
+                country.setName(countryData.getDescription().getContent());
               }
 
-              // Guardar el país
-              countryRepository.save(country);
-              savedCount++;
-
-              // También procesar estados si existen
-              if (countryData.getStates() != null && !countryData.getStates().isEmpty()) {
-                for (CountriesResponse.StateContent stateData : countryData.getStates()) {
-                  processState(stateData, country);
-                }
+              if (countryData.getStates() != null) {
+                country.setStates(objectMapper.writeValueAsString(countryData.getStates()));
               }
+              country = countryRepository.save(country);
+              countryDtos.add(modelMapper.map(country, CountryDto.class));
             }
 
           } catch (Exception e) {
@@ -243,31 +211,8 @@ public class HotelContentServiceImpl implements HotelContentService {
     } catch (Exception e) {
       log.error("Error al procesar respuesta de países: {}", e.getMessage(), e);
     }
-
-    log.info("Procesados {} países", savedCount);
-    return savedCount;
-  }
-
-  private void processState(CountriesResponse.StateContent stateData, Country country) {
-    try {
-      if (stateData.getCode() != null) {
-        State state = stateRepository.findByCode(stateData.getCode())
-                .orElse(new State());
-
-        state.setCode(stateData.getCode());
-        state.setCountry(country);
-
-        if (stateData.getName() != null) {
-          state.setName(stateData.getName());
-        } else {
-          state.setName("Estado " + stateData.getCode());
-        }
-
-        stateRepository.save(state);
-      }
-    } catch (Exception e) {
-      log.error("Error al procesar estado: {}", e.getMessage(), e);
-    }
+    log.info("Procesados {} países", countryDtos.size());
+    return countryDtos;
   }
 
   /**
@@ -276,69 +221,28 @@ public class HotelContentServiceImpl implements HotelContentService {
    * @param response respuesta de la API
    * @return número de destinos guardados
    */
-  private int processDestinationResponse(Object response) {
+  private int processDestinationResponse(DestinationsResponse response) {
     int savedCount = 0;
 
     try {
-      if (response instanceof Map) {
-        Map<String, Object> responseMap = (Map<String, Object>) response;
+      if (response != null && response.getDestinations() != null) {
 
-        if (responseMap.containsKey("destinations")
-                && responseMap.get("destinations") instanceof List) {
-          List<Map<String, Object>> destinations =
-                  (List<Map<String, Object>>) responseMap.get("destinations");
+        for (DestinationsResponse
+                  .DestinationContent destinationData : response.getDestinations()) {
 
-          for (Map<String, Object> destinationData : destinations) {
-            try {
-              String code = (String) destinationData.get("code");
-              String countryCode = (String) destinationData.get("countryCode");
+          String countryCode = destinationData.getCountryCode();
+          Destination destination = new Destination();
+          destination.setCode(destinationData.getCode());
 
-              if (code != null) {
-                Destination destination = destinationRepository.findById(code)
-                        .orElse(new Destination());
-
-                destination.setCode(code);
-
-                // Procesar descripción del destino
-                if (destinationData.containsKey("name")) {
-                  if (destinationData.get("name") instanceof Map) {
-                    Map<String, Object> nameMap = (Map<String, Object>) destinationData.get("name");
-                    if (nameMap.containsKey("content")) {
-                      destination.setName((String) nameMap.get("content"));
-                    }
-                  } else if (destinationData.get("name") instanceof String) {
-                    destination.setName((String) destinationData.get("name"));
-                  }
-                }
-
-                // Si no hay nombre, usar el código como nombre
-                if (destination.getName() == null || destination.getName().isEmpty()) {
-                  destination.setName("Destino " + code);
-                }
-
-                // Vincular con el país correspondiente
-                if (countryCode != null) {
-                  countryRepository.findById(countryCode).ifPresent(destination::setCountry);
-                }
-
-                // Guardar el destino
-                destinationRepository.save(destination);
-                savedCount++;
-
-                // Procesar zonas si están presentes
-                if (destinationData.containsKey("zones")
-                        && destinationData.get("zones") instanceof List) {
-                  List<Map<String, Object>> zones =
-                          (List<Map<String, Object>>) destinationData.get("zones");
-                  for (Map<String, Object> zoneData : zones) {
-                    processZoneFromDestination(zoneData, destination);
-                  }
-                }
-              }
-            } catch (Exception e) {
-              log.error("Error al procesar destino: {}", e.getMessage(), e);
-            }
+          if (countryCode != null) {
+            countryRepository.findById(countryCode).ifPresent(destination::setCountry);
           }
+
+          if (destinationData.getName() != null) {
+            destination.setName(destinationData.getName().getContent());
+          }
+          destinationRepository.save(destination);
+          savedCount++;
         }
       }
     } catch (Exception e) {
@@ -350,144 +254,26 @@ public class HotelContentServiceImpl implements HotelContentService {
   }
 
   /**
-   * Procesa los datos de una zona desde un destino y la guarda en la base de datos.
-   *
-   * @param zoneData datos de la zona
-   * @param destination destino al que pertenece la zona
-   */
-  private void processZoneFromDestination(Map<String, Object> zoneData, Destination destination) {
-    try {
-      Integer zoneCode = null;
-      if (zoneData.containsKey("zoneCode")) {
-        if (zoneData.get("zoneCode") instanceof Integer) {
-          zoneCode = (Integer) zoneData.get("zoneCode");
-        } else if (zoneData.get("zoneCode") instanceof String) {
-          zoneCode = Integer.valueOf((String) zoneData.get("zoneCode"));
-        }
-      }
-
-      if (zoneCode != null) {
-
-        Zone zone = zoneRepository.findByZoneCodeAndDestination(zoneCode, destination)
-                .orElse(new Zone());
-
-        zone.setZoneCode(zoneCode);
-        zone.setDestination(destination);
-
-        // Procesar nombre de la zona
-        if (zoneData.containsKey("name")) {
-          if (zoneData.get("name") instanceof Map) {
-            Map<String, Object> nameMap = (Map<String, Object>) zoneData.get("name");
-            if (nameMap.containsKey("content")) {
-              zone.setName((String) nameMap.get("content"));
-            }
-          } else if (zoneData.get("name") instanceof String) {
-            zone.setName((String) zoneData.get("name"));
-          }
-        }
-
-        // Si no hay nombre, usar el código como nombre
-        if (zone.getName() == null || zone.getName().isEmpty()) {
-          zone.setName("Zona " + zoneCode);
-        }
-
-        // Guardar la zona
-        zoneRepository.save(zone);
-      }
-    } catch (Exception e) {
-      log.error("Error al procesar zona: {}", e.getMessage(), e);
-    }
-  }
-
-  /**
-   * Obtiene un país por su código.
-   *
-   * @param countryCode código del país
-   * @return país
-   */
-  public Country getCountry(String countryCode) {
-    if (countryCode == null) {
-      return null;
-    }
-    return countryRepository.findById(countryCode).orElseThrow(
-            () -> new RuntimeException("No se encontró el país con código: " + countryCode)
-    );
-  }
-
-  /**
-   * Obtiene un estado por su código.
-   *
-   * @param stateCode código del estado
-   * @return estado
-   */
-  public State getState(String stateCode) {
-    if (stateCode == null) {
-      return null;
-    }
-
-    return stateRepository.findByCode(stateCode).orElseThrow(
-            () -> new RuntimeException("No se encontró el país con código: " + stateCode)
-    );
-  }
-
-  /**
-   * Obtiene un destino por su código.
-   *
-   * @param destinationCode código del destino
-   * @return destino
-   */
-  public Destination getDestination(String destinationCode) {
-    if (destinationCode == null) {
-      return null;
-    }
-    return destinationRepository.findById(destinationCode).orElseThrow(
-            () -> new RuntimeException("No se encontró el destino con código: " + destinationCode));
-  }
-
-  /**
-   * Obtiene una zona por su código.
-   *
-   * @param zoneCode código de la zona
-   * @return zona
-   */
-  public Zone getZone(Integer zoneCode, String destinationCode) {
-    if (zoneCode == null) {
-      return null;
-    }
-
-    return zoneRepository.findByZoneCodeAndDestinationCode(zoneCode, destinationCode).orElseThrow(
-            () -> new RuntimeException("No se encontró la zona con código: " + zoneCode));
-  }
-
-  /**
    * Guarda un hotel en la base de datos.
    *
    * @param hotelDto datos del hotel
-   * @param country país del hotel
-   * @param state estado del hotel
-   * @param destination destino del hotel
-   * @param zone zona del hotel
    * @return hotel guardado
    */
-  private Hotel saveHotel(HotelDto hotelDto, Country country,
-                          State state, Destination destination, Zone zone) {
+  private Hotel saveHotel(HotelDto hotelDto) {
 
     Optional<Hotel> existingHotel = hotelRepository.findById(hotelDto.getCode());
 
     Hotel hotel = existingHotel.orElse(new Hotel());
-
     hotel.setCode(hotelDto.getCode());
     hotel.setName(hotelDto.getName().getContent());
+    hotel.setCountryCode(hotelDto.getCountryCode());
+    hotel.setStateCode(hotelDto.getStateCode());
+    hotel.setDestinationCode(hotelDto.getDestinationCode());
+    hotel.setZoneCode(hotelDto.getZoneCode());
 
-    if (hotelDto.getDescription() != null
-            && hotelDto.getDescription().getContent() != null) {
+    if (hotelDto.getDescription() != null) {
       hotel.setDescription(hotelDto.getDescription().getContent());
     }
-
-    hotel.setCountryCode(country != null ? country.getCode() : null);
-    hotel.setStateCode(state != null ? state.getCode() : null);
-    hotel.setDestinationCode(destination != null ? destination.getCode() : null);
-    hotel.setZoneCode(zone != null ? zone.getZoneCode() : null);
 
     if (hotelDto.getCoordinates() != null) {
       hotel.setLatitude(hotelDto.getCoordinates().getLatitude());
@@ -495,8 +281,6 @@ public class HotelContentServiceImpl implements HotelContentService {
     }
 
     hotel.setGiataCode(hotelDto.getGiataCode());
-
-    // Categoría y cadena
     hotel.setCategoryCode(hotelDto.getCategoryCode());
     hotel.setCategoryGroupCode(hotelDto.getCategoryGroupCode());
     hotel.setChainCode(hotelDto.getChainCode());
@@ -506,8 +290,8 @@ public class HotelContentServiceImpl implements HotelContentService {
       hotel.setAddress(hotelDto.getAddress().getContent());
     }
 
-    hotel.setCity(hotelDto.getCity().getContent());
-
+    hotel.setCity(hotelDto.getCity() != null
+            ? hotelDto.getCity().getContent() : null);
     hotel.setPostalCode(hotelDto.getPostalCode());
     hotel.setEmail(hotelDto.getEmail());
     hotel.setLicense(hotelDto.getLicense());
@@ -518,11 +302,13 @@ public class HotelContentServiceImpl implements HotelContentService {
         hotel.setPhones(objectMapper.writeValueAsString(hotelDto.getPhones()));
       }
 
-      if (hotelDto.getBoards() != null) {
-        hotel.setBoardCodes(objectMapper.writeValueAsString(hotelDto.getBoards()));
+      if (hotelDto.getBoardCodes() != null) {
+        hotel.setBoardCodes(objectMapper.writeValueAsString(hotelDto.getBoardCodes()));
       }
 
-      hotel.setSegmentCodes(hotelDto.getSegmentCodes());
+      if (hotelDto.getSegmentCodes() != null && !hotelDto.getSegmentCodes().isEmpty()) {
+        hotel.setSegmentCodes(objectMapper.writeValueAsString(hotelDto.getSegmentCodes()));
+      }
 
       if (hotelDto.getFacilities() != null) {
         hotel.setFacilities(objectMapper.writeValueAsString(hotelDto.getFacilities()));
@@ -540,6 +326,18 @@ public class HotelContentServiceImpl implements HotelContentService {
         hotel.setRooms(objectMapper.writeValueAsString(hotelDto.getRooms()));
       }
 
+      if (hotelDto.getInterestPoints() != null && !hotelDto.getInterestPoints().isEmpty()) {
+        hotel.setInterestPoints(objectMapper.writeValueAsString(hotelDto.getInterestPoints()));
+      }
+
+      if (hotelDto.getWildcards() != null && !hotelDto.getWildcards().isEmpty()) {
+        hotel.setWildcards(objectMapper.writeValueAsString(hotelDto.getWildcards()));
+      }
+
+      if (hotelDto.getIssues() != null && !hotelDto.getIssues().isEmpty()) {
+        hotel.setIssues(objectMapper.writeValueAsString(hotelDto.getIssues()));
+      }
+
     } catch (Exception e) {
       log.error("Error serializando campos JSON para hotel {}: {}",
               hotelDto.getCode(), e.getMessage());
@@ -549,7 +347,6 @@ public class HotelContentServiceImpl implements HotelContentService {
     hotel.setLastUpdate(hotelDto.getLastUpdate());
     hotel.setS2c(hotelDto.getS2C());
     hotel.setRanking(hotelDto.getRanking());
-
     hotel.setLastUpdated(LocalDateTime.now());
 
     return hotelRepository.save(hotel);

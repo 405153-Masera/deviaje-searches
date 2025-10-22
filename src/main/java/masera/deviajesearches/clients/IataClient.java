@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 public class IataClient {
 
   private final WebClient webClient;
+
   private final IataConfig iataConfig;
 
   private static final String AIRPORTS_ENDPOINT = "/v1/airports";
@@ -47,9 +48,11 @@ public class IataClient {
             .onStatus(HttpStatusCode::is5xxServerError,
                     response -> response.bodyToMono(String.class)
                             .map(body -> new RuntimeException("Error del servidor: " + body)))
-            .bodyToMono(IataResponse[].class) // <-- Cambio clave aquí
-            .map(array -> array.length > 0 ? array[0] : null) // devuelve el primer resultado
-            .doOnSuccess(response -> log.info("Búsqueda de aeropuerto completada exitosamente para IATA: {}", iataCode))
-            .doOnError(error -> log.error("Error al obtener aeropuerto con IATA {}: {}", iataCode, error.getMessage()));
+            .bodyToMono(IataResponse[].class)
+            .map(array -> array.length > 0 ? array[0] : null)
+            .doOnSuccess(response -> log.info(
+                    "Búsqueda de aeropuerto completada exitosamente para IATA: {}", iataCode))
+            .doOnError(error -> log.error(
+                    "Error al obtener aeropuerto con IATA {}: {}", iataCode, error.getMessage()));
   }
 }

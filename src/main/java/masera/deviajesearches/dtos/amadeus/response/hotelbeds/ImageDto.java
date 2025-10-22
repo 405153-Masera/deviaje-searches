@@ -11,10 +11,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImageDto {
+
+  private String characteristicCode;
+
   private String imageTypeCode;
+
   private String path;
+
   private String roomCode;
+
   private String roomType;
+
   private Integer order;
+
   private String visualOrder;
+
+  private String PMSRoomCode;
 }

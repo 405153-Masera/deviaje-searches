@@ -1,7 +1,6 @@
 package masera.deviajesearches.controllers;
 
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Controlador para la gestión de contenido de hoteles.
  */
 @RestController
-@RequestMapping("/api/searches/hotels/content")
+@RequestMapping("/api-searches/hotels/content")
 @RequiredArgsConstructor
 public class HotelContentController {
 
@@ -25,41 +24,27 @@ public class HotelContentController {
 
   /**
    * Carga hoteles desde la API de Hotelbeds.
+   * Si se proporciona lastUpdateTime, obtiene solo las actualizaciones.
    *
    * @param from índice inicial (por defecto 1)
    * @param to índice final (por defecto 1000)
    * @param language idioma (por defecto ENG)
+   * @param lastUpdateTime (Opcional) fecha de última actualización en formato YYYY-MM-DD
    * @return lista de hoteles cargados
    */
-  @GetMapping("/load")
+  @PostMapping("/hotels/load")
   public ResponseEntity<String> loadHotels(
           @RequestParam(defaultValue = "1") int from,
           @RequestParam(defaultValue = "1000") int to,
-          @RequestParam(defaultValue = "CAS") String language) {
-
-    List<Object> hotels = hotelContentService.loadHotels(from, to, language);
-    return ResponseEntity.ok("Hoteles cargados: " + hotels.size()
-            + " desde " + from + " hasta " + to + " en idioma " + language);
-  }
-
-  /**
-   * Actualiza hoteles desde la API de Hotelbeds.
-   *
-   * @param from índice inicial (por defecto 1)
-   * @param to índice final (por defecto 1000)
-   * @param language idioma (por defecto ENG)
-   * @param lastUpdateTime fecha de última actualización
-   * @return lista de hoteles actualizados
-   */
-  @GetMapping("/update")
-  public ResponseEntity<List<Object>> updateHotels(
-          @RequestParam(defaultValue = "1") int from,
-          @RequestParam(defaultValue = "1000") int to,
           @RequestParam(defaultValue = "CAS") String language,
-          @RequestParam String lastUpdateTime) {
+          @RequestParam(required = false) String lastUpdateTime) {
 
-    List<Object> hotels = hotelContentService.updateHotels(from, to, language, lastUpdateTime);
-    return ResponseEntity.ok(hotels);
+    Integer size = hotelContentService.loadHotels(from, to, language, lastUpdateTime);
+    String message = lastUpdateTime != null
+            ? "Hoteles actualizados: " + size + " desde " + lastUpdateTime
+            : "Hoteles cargados: " + size + " desde " + from + " hasta " + to;
+
+    return ResponseEntity.ok(message + " en idioma " + language);
   }
 
   /**
@@ -69,27 +54,44 @@ public class HotelContentController {
    * @return respuesta con el resultado de la carga
    */
   @PostMapping("/countries/load")
-  public ResponseEntity<Map<String, Object>> loadCountries(
-          @RequestParam(defaultValue = "CAS") String language) {
+  public ResponseEntity<String> loadCountries(
+          @RequestParam(defaultValue = "1") int from,
+          @RequestParam(defaultValue = "1000") int to,
+          @RequestParam(defaultValue = "CAS") String language,
+          @RequestParam(required = false) String lastUpdateTime) {
 
-    Map<String, Object> result = hotelContentService.loadCountries(language);
-    return ResponseEntity.ok(result);
+    Integer size = hotelContentService.loadCountries(
+            from, to, language, lastUpdateTime);
+
+    String message = lastUpdateTime != null
+            ? "Países actualizados: " + size + " desde " + lastUpdateTime
+            : "Países cargados: " + size + " desde " + from + " hasta " + to;
+    return ResponseEntity.ok(message);
   }
 
   /**
    * Carga destinos desde la API de Hotelbeds.
    *
-   * @param countryCode código de país opcional
+   * @param from índice inicial (por defecto 1)
+   * @param to índice final (por defecto 1000)
    * @param language idioma (por defecto ENG)
    * @return respuesta con el resultado de la carga
    */
   @PostMapping("/destinations/load")
-  public ResponseEntity<Map<String, Object>> loadDestinations(
-          @RequestParam(required = false) String countryCode,
-          @RequestParam(defaultValue = "ENG") String language) {
+  public ResponseEntity<String> loadDestinations(
+          @RequestParam(defaultValue = "1") int from,
+          @RequestParam(defaultValue = "1000") int to,
+          @RequestParam(defaultValue = "CAS") String language,
+          @RequestParam(required = false) String lastUpdateTime) {
 
-    Map<String, Object> result = hotelContentService.loadDestinations(countryCode, language);
-    return ResponseEntity.ok(result);
+    Integer size = hotelContentService.loadDestinations(
+            from, to, language, lastUpdateTime);
+
+    String message = lastUpdateTime != null
+            ? "Destinos actualizados: " + size + " desde " + lastUpdateTime
+            : "Destinos cargados: " + size + " desde " + from + " hasta " + to;
+
+    return ResponseEntity.ok(message);
   }
 
   /**

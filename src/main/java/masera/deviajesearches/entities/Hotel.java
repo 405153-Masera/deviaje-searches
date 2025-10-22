@@ -1,15 +1,11 @@
 package masera.deviajesearches.entities;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,9 +50,10 @@ public class Hotel {
 
   private String accommodationTypeCode;
 
-  // Dirección
   private String address;
+
   private String city;
+
   private String postalCode;
 
   private String email;
@@ -71,10 +68,9 @@ public class Hotel {
   @Column(columnDefinition = "JSON")
   private String boardCodes;
 
-  @ElementCollection
-  @CollectionTable(name = "hotel_segment_codes", joinColumns = @JoinColumn(name = "hotel_code"))
-  @Column(name = "segment_code")
-  private List<Integer> segmentCodes;
+  @Lob
+  @Column(columnDefinition = "JSON")
+  private String segmentCodes;
 
   @Lob
   @Column(columnDefinition = "JSON")
@@ -103,6 +99,10 @@ public class Hotel {
   @Lob
   @Column(columnDefinition = "JSON")
   private String wildcards;
+
+  @Lob
+  @Column(columnDefinition = "JSON")
+  private String issues;
 
   private String web;
 

@@ -5,20 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO que representa la terminal cercana de un hotel.
+ * DTO que representa una instalación de estancia en habitación.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TerminalDto {
+public class RoomStayFacilityDto {
 
   private ContentDto description;
 
-  private Integer distance;
+  private Integer facilityCode;
 
-  private ContentDto name;
+  private Integer facilityGroupCode;
 
-  private String terminalCode;
-
-  private String terminalType;
+  private Integer number;
 }
