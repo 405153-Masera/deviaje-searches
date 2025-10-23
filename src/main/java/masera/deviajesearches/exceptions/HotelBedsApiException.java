@@ -3,10 +3,10 @@ package masera.deviajesearches.exceptions;
 import lombok.Getter;
 
 /**
- * Excepción personalizada para errores relacionados con la API de Amadeus.
+ * Excepción personalizada para errores relacionados con la API de HotelBeds.
  */
 @Getter
-public class AmadeusApiException extends  RuntimeException {
+public class HotelBedsApiException extends RuntimeException {
 
   private final int statusCode;
 
@@ -16,7 +16,7 @@ public class AmadeusApiException extends  RuntimeException {
    * @param message Mensaje de error.
    * @param statusCode Código de estado HTTP.
    */
-  public AmadeusApiException(String message, int statusCode) {
+  public HotelBedsApiException(String message, int statusCode) {
     super(message);
     this.statusCode = statusCode;
   }
@@ -28,7 +28,7 @@ public class AmadeusApiException extends  RuntimeException {
    * @param cause Causa de la excepción.
    * @param statusCode Código de estado HTTP.
    */
-  public AmadeusApiException(String message, Throwable cause, int statusCode) {
+  public HotelBedsApiException(String message, Throwable cause, int statusCode) {
     super(message, cause);
     this.statusCode = statusCode;
   }

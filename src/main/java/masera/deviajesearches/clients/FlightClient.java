@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.configs.AmadeusConfig;
 import masera.deviajesearches.dtos.amadeus.request.FlightSearchRequest;
-import masera.deviajesearches.utils.AmadeusErrorHandler;
+import masera.deviajesearches.utils.ErrorHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ public class FlightClient {
 
   private final WebClient webClient;
 
-  private final AmadeusErrorHandler errorHandler;
+  private final ErrorHandler errorHandler;
 
   private final AmadeusConfig amadeusConfig;
 

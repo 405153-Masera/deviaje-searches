@@ -7,6 +7,7 @@ import java.util.Map;
 import lombok.Data;
 import masera.deviajesearches.dtos.amadeus.ErrorApi;
 import masera.deviajesearches.exceptions.AmadeusApiException;
+import masera.deviajesearches.exceptions.HotelBedsApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -30,6 +31,19 @@ public class ControllerException {
    */
   @ExceptionHandler(AmadeusApiException.class)
   public ResponseEntity<ErrorApi> handleAmadeusApiException(AmadeusApiException e) {
+    HttpStatus status = HttpStatus.valueOf(e.getStatusCode());
+    ErrorApi error = buildError(e.getMessage(), status);
+    return ResponseEntity.status(status).body(error);
+  }
+
+  /**
+   * Manejador para errores de la API de Hotelbeds.
+   *
+   * @param e excepción de la API de Hotelbeds.
+   * @return ResponseEntity con el error.
+   */
+  @ExceptionHandler(HotelBedsApiException.class)
+  public ResponseEntity<ErrorApi> handleHotelBedsApiException(HotelBedsApiException e) {
     HttpStatus status = HttpStatus.valueOf(e.getStatusCode());
     ErrorApi error = buildError(e.getMessage(), status);
     return ResponseEntity.status(status).body(error);

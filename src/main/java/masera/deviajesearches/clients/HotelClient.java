@@ -8,7 +8,7 @@ import masera.deviajesearches.dtos.amadeus.response.HotelSearchResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.destinations.DestinationsResponse;
-import masera.deviajesearches.utils.AmadeusErrorHandler;
+import masera.deviajesearches.utils.ErrorHandler;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,7 +30,7 @@ public class HotelClient {
 
   private final HotelbedsConfig hotelbedsConfig;
 
-  private final AmadeusErrorHandler errorHandler;
+  private final ErrorHandler errorHandler;
 
   private static final String AVAILABILITY_ENDPOINT = "/hotel-api/1.0/hotels";
 
@@ -56,17 +56,10 @@ public class HotelClient {
             .retrieve()
             .bodyToMono(HotelSearchResponse.class)
             .doOnSuccess(response -> log.info("Búsqueda de hoteles completada exitosamente"))
-            .doOnError(error -> {
-              if (error instanceof WebClientResponseException webError) {
-                log.error("Error al crear reserva de hotel - Status: {}, Body: {}",
-                        webError.getStatusCode(), webError.getResponseBodyAsString());
-              } else {
-                log.error("Error al crear reserva de vuelo: {}", error.getMessage());
-              }
-            })
             .onErrorResume(WebClientResponseException.class, e -> {
-              log.error("Error de respuesta de Hotelbeds: {}", e.getResponseBodyAsString());
-              throw errorHandler.handleAmadeusError(e);
+              log.error("Error al buscar ofertas de hoteles - Status: {}, Body: {}",
+                      e.getStatusCode(), e.getResponseBodyAsString());
+              throw errorHandler.handleHotelBedsError(e);
             });
   }
 
@@ -93,7 +86,12 @@ public class HotelClient {
             .bodyToMono(HotelContentResponse.class)
             .doOnSuccess(response -> log.info("Contenido de hoteles obtenido exitosamente"))
             .doOnError(error -> log.error("Error al obtener contenido de hoteles: {}",
-                    error.getMessage()));
+                    error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
+              log.error("Error al buscar el contenido de hoteles - Status: {}, Body: {}",
+                      e.getStatusCode(), e.getResponseBodyAsString());
+              throw errorHandler.handleHotelBedsError(e);
+            });
   }
 
   /**
