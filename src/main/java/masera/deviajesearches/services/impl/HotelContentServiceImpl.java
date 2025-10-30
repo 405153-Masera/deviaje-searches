@@ -14,12 +14,30 @@ import masera.deviajesearches.dtos.amadeus.response.CountryDto;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.accommodations.AccommodationResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.boards.BoardsResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.categories.CategoriesResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.chains.ChainsResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.destinations.DestinationsResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.facilities.FacilitiesResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.facilities.FacilityGroupsResponse;
+import masera.deviajesearches.entities.Accommodation;
+import masera.deviajesearches.entities.Board;
+import masera.deviajesearches.entities.Category;
+import masera.deviajesearches.entities.Chain;
 import masera.deviajesearches.entities.Country;
 import masera.deviajesearches.entities.Destination;
+import masera.deviajesearches.entities.Facility;
+import masera.deviajesearches.entities.FacilityGroup;
 import masera.deviajesearches.entities.Hotel;
+import masera.deviajesearches.repositories.AccommodationRepository;
+import masera.deviajesearches.repositories.BoardRepository;
+import masera.deviajesearches.repositories.CategoryRepository;
+import masera.deviajesearches.repositories.ChainRepository;
 import masera.deviajesearches.repositories.CountryRepository;
 import masera.deviajesearches.repositories.DestinationRepository;
+import masera.deviajesearches.repositories.FacilityGroupRepository;
+import masera.deviajesearches.repositories.FacilityRepository;
 import masera.deviajesearches.repositories.HotelRepository;
 import masera.deviajesearches.services.interfaces.HotelContentService;
 import org.modelmapper.ModelMapper;
@@ -47,6 +65,18 @@ public class HotelContentServiceImpl implements HotelContentService {
 
   private final DestinationRepository destinationRepository;
 
+  private final AccommodationRepository accommodationRepository;
+
+  private final BoardRepository boardRepository;
+
+  private final CategoryRepository categoryRepository;
+
+  private final FacilityRepository facilityRepository;
+
+  private final FacilityGroupRepository facilityGroupRepository;
+
+  private final ChainRepository chainRepository;
+
   /**
    * Carga hoteles desde la API de Hotelbeds.
    *
@@ -59,14 +89,9 @@ public class HotelContentServiceImpl implements HotelContentService {
   public Integer loadHotels(int from, int to, String language, String lastUpdateTime) {
     log.info("Cargando hoteles desde {} hasta {} en idioma {}", from, to, language);
 
-    try {
-      HotelContentResponse response = hotelClient
-              .getHotelContent(from, to, language, lastUpdateTime).block();
-      return saveHotels(response);
-    } catch (Exception e) {
-      log.error("Error al cargar hoteles: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al cargar hoteles", e);
-    }
+    HotelContentResponse response = hotelClient
+            .getHotelContent(from, to, language, lastUpdateTime).block();
+    return saveHotels(response);
   }
 
   @Override
@@ -142,6 +167,73 @@ public class HotelContentServiceImpl implements HotelContentService {
     }
   }
 
+  @Override
+  public Integer loadAccommodations(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando tipos de alojamientos en idioma {}", language);
+
+    try {
+      AccommodationResponse response = hotelClient.getAccommodations(
+              from, to, language, lastUpdateTime).block();
+
+      return processAccommodationResponse(response);
+
+    } catch (Exception e) {
+      log.error("Error al cargar los tipos de alojamientos: {}", e.getMessage(), e);
+      throw new RuntimeException("Error al cargar los tipos de alojamientos", e);
+    }
+  }
+
+
+  @Override
+  public Integer loadBoards(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando regímenes de alimentos en idioma {}", language);
+    BoardsResponse response = hotelClient.getBoards(
+            from, to, language, lastUpdateTime).block();
+
+    return processBoardsResponse(response);
+  }
+
+  @Override
+  public Integer loadCategories(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando categorías de hoteles en idioma {}", language);
+
+    CategoriesResponse response = hotelClient.getCategories(
+            from, to, language, lastUpdateTime).block();
+
+    return processCategoriesResponse(response);
+  }
+
+  @Override
+  public Integer loadFacilities(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando instalaciones en idioma {}", language);
+
+    FacilitiesResponse response = hotelClient.getFacilities(
+            from, to, language, lastUpdateTime).block();
+
+    return processFacilitiesResponse(response);
+  }
+
+
+
+  @Override
+  public Integer loadFacilityGroups(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando grupos de instalaciones en idioma {}", language);
+
+    FacilityGroupsResponse response = hotelClient.getFacilityGroups(
+            from, to, language, lastUpdateTime).block();
+
+    return processFacilityGroupsResponse(response);
+  }
+
+  @Override
+  public Integer loadChains(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando cadenas hoteleras en idioma {}", language);
+
+    ChainsResponse response = hotelClient.getChains(from, to, language, lastUpdateTime).block();
+
+    return processChainsResponse(response);
+  }
+
   /**
    *  Guarda los datos de los hoteles en la base de datos.
    *
@@ -169,6 +261,138 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     log.info("Procesados {} hoteles", results.size());
     return results.size();
+  }
+
+  /**
+   * Procesa la respuesta de instalaciones de la API y los guarda en la base de datos.
+   *
+   * @param response respuesta de la API
+   * @return número de instalaciones guardadas.
+   */
+  private Integer processFacilitiesResponse(FacilitiesResponse response) {
+
+    int savedCount = 0;
+
+    try {
+      if (response != null && response.getFacilities() != null) {
+
+        for (FacilitiesResponse.FacilityContent facilityData : response.getFacilities()) {
+          Facility facility = new Facility();
+          facility.setCode(facilityData.getCode());
+          facility.setFacilityGroupCode(facilityData.getFacilityGroupCode());
+          facility.setFacilityTypologyCode(facilityData.getFacilityTypologyCode());
+          if (facilityData.getDescription() != null) {
+            facility.setDescription(facilityData.getDescription().getContent());
+          }
+          facilityRepository.save(facility);
+          savedCount++;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar respuesta de instalaciones: {}", e.getMessage(), e);
+    }
+
+    log.info("Procesadas {} instalaciones", savedCount);
+    return savedCount;
+  }
+
+  /**
+   * Procesa la respuesta de grupos de instalaciones de la API y los guarda en la base de datos.
+   *
+   * @param response respuesta de la API
+   * @return número de grupos de instalaciones guardados.
+   */
+  private Integer processFacilityGroupsResponse(FacilityGroupsResponse response) {
+    int savedCount = 0;
+
+    try {
+      if (response != null && response.getFacilityGroups() != null) {
+
+        for (FacilityGroupsResponse.FacilityGroupContent groupData : response.getFacilityGroups()) {
+
+          FacilityGroup facilityGroup = new FacilityGroup();
+          facilityGroup.setCode(groupData.getCode());
+          if (groupData.getDescription() != null) {
+            facilityGroup.setDescription(groupData.getDescription().getContent());
+          }
+          facilityGroupRepository.save(facilityGroup);
+          savedCount++;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar respuesta de grupos de instalaciones: {}", e.getMessage(), e);
+    }
+
+    log.info("Procesados {} grupos de instalaciones", savedCount);
+    return savedCount;
+  }
+
+  /**
+   * Procesa la respuesta de grupos de regímenes de alimentos y los guarda en la base de datos.
+   *
+   * @param response respuesta de la API
+   * @return número de regímenes de alimentos guardados.
+   */
+  private int processBoardsResponse(BoardsResponse response) {
+
+    int savedCount = 0;
+
+    try {
+      if (response != null && response.getBoards() != null) {
+
+        for (BoardsResponse.BoardContent boardData : response.getBoards()) {
+
+          Board board = new Board();
+          board.setCode(boardData.getCode());
+          board.setMultiLingualCode(boardData.getMultiLingualCode());
+          if (boardData.getDescription() != null) {
+            board.setDescription(boardData.getDescription().getContent());
+          }
+          boardRepository.save(board);
+          savedCount++;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar respuesta de regímenes de alimentos: {}", e.getMessage(), e);
+    }
+
+    log.info("Procesados {} regímenes de alimentos", savedCount);
+    return savedCount;
+  }
+
+  /**
+   * Procesa la respuesta de categorías de hoteles de la API y los guarda en la base de datos.
+   *
+   * @param response respuesta de la API
+   * @return número de categorías guardadas
+   */
+  private int processCategoriesResponse(CategoriesResponse response) {
+
+    int savedCount = 0;
+
+    try {
+      if (response != null && response.getCategories() != null) {
+
+        for (CategoriesResponse.CategoryContent categoryData : response.getCategories()) {
+
+          Category category = new masera.deviajesearches.entities.Category();
+          category.setCode(categoryData.getCode());
+          if (categoryData.getDescription() != null) {
+            category.setDescription(categoryData.getDescription().getContent());
+          }
+          category.setAccommodationType(categoryData.getAccommodationType());
+          category.setCategoryGroup(categoryData.getGroup());
+          category.setSimpleCode(categoryData.getSimpleCode());
+          categoryRepository.save(category);
+          savedCount++;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar respuesta de categorías de hoteles: {}", e.getMessage(), e);
+    }
+
+    log.info("Procesadas {} categorías de hoteles", savedCount);
+    return savedCount;
   }
 
   /**
@@ -215,6 +439,31 @@ public class HotelContentServiceImpl implements HotelContentService {
     return countryDtos;
   }
 
+  private int processAccommodationResponse(AccommodationResponse response) {
+
+    int savedCount = 0;
+
+    try {
+      if (response != null && response.getAccommodations() != null) {
+
+        for (AccommodationResponse
+                  .AccommodationContent accommodationData : response.getAccommodations()) {
+
+          Accommodation accommodation = new Accommodation();
+          accommodation.setCode(accommodationData.getCode());
+          accommodation.setTypeDescription(accommodationData.getTypeDescription());
+          accommodationRepository.save(accommodation);
+          savedCount++;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar respuesta de tipos de alojamiento: {}", e.getMessage(), e);
+    }
+
+    log.info("Procesados {} tipos de alojamiento", savedCount);
+    return savedCount;
+  }
+
   /**
    * Procesa la respuesta de destinos de la API y los guarda en la base de datos.
    *
@@ -252,6 +501,38 @@ public class HotelContentServiceImpl implements HotelContentService {
     log.info("Procesados {} destinos", savedCount);
     return savedCount;
   }
+
+  /**
+   * Procesa la respuesta de cadenas hoteleras de la API y los guarda en la base de datos.
+   *
+   * @param response respuesta de la API
+   * @return número de cadenas hoteleras guardadas
+   */
+  private Integer processChainsResponse(ChainsResponse response) {
+    int savedCount = 0;
+
+    try {
+      if (response != null && response.getChains() != null) {
+
+        for (ChainsResponse.ChainContent chainData : response.getChains()) {
+
+          Chain chain = new masera.deviajesearches.entities.Chain();
+          chain.setCode(chainData.getCode());
+          if (chainData.getDescription() != null) {
+            chain.setDescription(chainData.getDescription().getContent());
+          }
+          chainRepository.save(chain);
+          savedCount++;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error al procesar respuesta de cadenas hoteleras: {}", e.getMessage(), e);
+    }
+
+    log.info("Procesadas {} cadenas hoteleras", savedCount);
+    return savedCount;
+  }
+
 
   /**
    * Guarda un hotel en la base de datos.

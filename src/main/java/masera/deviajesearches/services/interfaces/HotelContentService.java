@@ -1,7 +1,6 @@
 package masera.deviajesearches.services.interfaces;
 
 import java.util.List;
-import java.util.Map;
 import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
 import org.springframework.stereotype.Service;
@@ -60,5 +59,71 @@ public interface HotelContentService {
    * @return cantidad de destinos cargados
    */
   Integer loadDestinations(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga tipos de alojamiento desde la API de Hotelbeds y los guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de tipos de alojamiento cargados
+   */
+  Integer loadAccommodations(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga regímenes de alimentos desde la API de Hotelbeds y los guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de regímenes de alimentos cargados
+   */
+  Integer loadBoards(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga categorías de hoteles desde la API de Hotelbeds y las guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de categorías cargadas
+   */
+  Integer loadCategories(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga instalaciones desde la API de Hotelbeds y las guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de instalaciones cargadas
+   */
+  Integer loadFacilities(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga grupos de instalaciones desde la API de Hotelbeds y las guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de grupos de instalaciones cargadas
+   */
+  Integer loadFacilityGroups(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga cadenas hoteleras desde la API de Hotelbeds y las guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de cadenas hoteleras cargadas
+   */
+  Integer loadChains(int from, int to, String language, String lastUpdateTime);
 }
 

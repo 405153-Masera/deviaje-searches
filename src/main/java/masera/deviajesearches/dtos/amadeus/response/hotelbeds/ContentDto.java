@@ -13,4 +13,6 @@ import lombok.NoArgsConstructor;
 public class ContentDto {
 
   private String content;
+
+  private String languageCode;
 }

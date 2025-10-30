@@ -1,6 +1,7 @@
 package masera.deviajesearches.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +10,6 @@ import masera.deviajesearches.exceptions.AmadeusApiException;
 import masera.deviajesearches.exceptions.HotelBedsApiException;
 import masera.deviajesearches.utils.dtos.AmadeusError;
 import masera.deviajesearches.utils.dtos.AmadeusErrorResponse;
-import masera.deviajesearches.utils.dtos.HotelBedsErrorResponse;
-import masera.deviajesearches.utils.dtos.HotelBedsErrorV2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -69,32 +67,110 @@ public class ErrorHandler {
    * @return Una nueva HotelBedsApiException con los detalles formateados
    */
   public HotelBedsApiException handleHotelBedsError(WebClientResponseException e) {
-    try {
 
-      if (e.getStatusCode() == HttpStatus.BAD_REQUEST
-              || e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
+    String responseBody = e.getResponseBodyAsString();
+    int statusCode = e.getStatusCode().value();
 
-        HotelBedsErrorResponse errorResponse = objectMapper.readValue(
-                e.getResponseBodyAsString(), HotelBedsErrorResponse.class);
+    log.error("Error de HotelBeds API - Status: {}, Body: {}", statusCode, responseBody);
 
-        String message = errorResponse.getError().getCode() + " - "
-                + errorResponse.getError().getMessage();
-        return new HotelBedsApiException(message, e.getStatusCode().value());
-
-      } else {
-        HotelBedsErrorV2 errorResponse = objectMapper.readValue(
-                e.getResponseBodyAsString(), HotelBedsErrorV2.class);
-        String message = errorResponse.getError();
-        return new HotelBedsApiException(message, e.getStatusCode().value());
-      }
-
-    } catch (JsonProcessingException ex) {
-      log.error("Error inesperado al procesar error de HotelBeds", ex);
+    if (responseBody.trim().isEmpty()) {
+      return createGenericException(statusCode, e.getStatusText());
     }
 
-    return new HotelBedsApiException(
-            "Error al comunicarse con HotelBeds Content API: " + e.getStatusText(),
-            e.getStatusCode().value());
+    try {
+
+      JsonNode rootNode = objectMapper.readTree(responseBody);
+
+      if (!rootNode.has("error")) {
+        return createGenericException(statusCode, e.getStatusText());
+      }
+
+      JsonNode errorNode = rootNode.get("error");
+
+      if (errorNode.isObject() && errorNode.has("code") && errorNode.has("message")) {
+        return handleCompleteErrorFormat(errorNode, statusCode, e.getStatusText());
+      }
+
+      if (errorNode.isTextual()) {
+        return handleSimpleErrorFormat(errorNode.asText(), statusCode, e.getStatusText());
+      }
+
+      log.warn("Formato de error desconocido de HotelBeds: {}", responseBody);
+      return createGenericException(statusCode, responseBody);
+
+    } catch (JsonProcessingException ex) {
+      log.error("Error al parsear respuesta de "
+              + "HotelBeds (no es JSON válido): {}", responseBody, ex);
+      return createGenericException(statusCode, responseBody);
+
+    } catch (Exception ex) {
+      log.error("Error inesperado al procesar error de HotelBeds", ex);
+      return createGenericException(statusCode, e.getStatusText());
+    }
+  }
+
+  /**
+   * Maneja el formato completo de error de HotelBeds.
+   * Formato: {"error": {"code": "INVALID_DATA", "message": "..."}}
+   *
+   * @param errorNode Nodo JSON que contiene el error
+   * @param statusCode Código HTTP
+   * @param statusText Texto del estado HTTP
+   * @return HotelBedsApiException con el mensaje formateado
+   */
+  private HotelBedsApiException handleCompleteErrorFormat(
+          JsonNode errorNode, int statusCode, String statusText) {
+    String code = errorNode.has("code")
+            ? errorNode.get("code").asText() : "UNKNOWN";
+    String message = errorNode.has("message")
+            ? errorNode.get("message").asText() : "Sin descripción";
+
+    String formattedMessage = String.format(
+            "— %d %s - HotelBeds API Error [%s]: %s",
+            statusCode,
+            statusText.toUpperCase(),
+            code,
+            message
+    );
+    return new HotelBedsApiException(formattedMessage, statusCode);
+  }
+
+  /**
+   * Maneja el formato simple para el error de HotelBeds.
+   * Formato: {"error": "Access to this API has been disallowed"}
+   *
+   * @param errorMessage Mensaje de error
+   * @param statusCode Código HTTP
+   * @param statusText Texto del estado HTTP
+   * @return HotelBedsApiException con el mensaje formateado
+   */
+  private HotelBedsApiException handleSimpleErrorFormat(
+          String errorMessage, int statusCode, String statusText) {
+
+    String formattedMessage = String.format(
+            "— %d %s - HotelBeds API Error: %s",
+            statusCode,
+            statusText.toUpperCase(),
+            errorMessage
+    );
+
+    return new HotelBedsApiException(formattedMessage, statusCode);
+  }
+
+  /**
+   * Crea una excepción genérica cuando no se puede parsear el error.
+   *
+   * @param statusCode Código HTTP
+   * @param statusText Texto del estado HTTP
+   * @return HotelBedsApiException genérica
+   */
+  private HotelBedsApiException createGenericException(int statusCode, String statusText) {
+    String message = String.format(
+            "— %d %s - Error al comunicarse con HotelBeds API",
+            statusCode,
+            statusText.toUpperCase()
+    );
+    return new HotelBedsApiException(message, statusCode);
   }
 
   private static String getString(AmadeusError amadeusError) {

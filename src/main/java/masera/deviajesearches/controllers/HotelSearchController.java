@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api-searches/hotels")
+@RequestMapping("/api/searches/hotels")
 public class HotelSearchController {
 
 
