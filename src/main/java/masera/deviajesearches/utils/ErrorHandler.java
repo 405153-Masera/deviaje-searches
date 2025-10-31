@@ -173,6 +173,12 @@ public class ErrorHandler {
     return new HotelBedsApiException(message, statusCode);
   }
 
+  /**
+   * Construye el mensaje de error de Amadeus.
+   *
+   * @param amadeusError Error de Amadeus
+   * @return Mensaje formateado
+   */
   private static String getString(AmadeusError amadeusError) {
     String detail = amadeusError.getDetail() != null
             ? amadeusError.getDetail() : "Error desconocido";

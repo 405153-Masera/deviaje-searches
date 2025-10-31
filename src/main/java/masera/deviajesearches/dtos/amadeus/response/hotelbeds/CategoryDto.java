@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CategoryDto {
 
-  private String accommodationType;
-
   private String code;
 
-  private ContentDto description;
+  private String simpleCode;
+
+  private String accommodationType;
 
   private String group;
 
-  private Integer simpleCode;
+  private ContentDto description;
 }

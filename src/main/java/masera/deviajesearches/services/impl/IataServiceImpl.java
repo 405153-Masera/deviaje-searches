@@ -26,6 +26,7 @@ public class IataServiceImpl {
   public Mono<IataResponse> getAirportByIata(String iataCode) {
     log.info("Procesando solicitud de aeropuerto con código IATA: {}", iataCode);
     return iataClient.getAirportByIata(iataCode)
-            .switchIfEmpty(Mono.error(new RuntimeException("No se encontró el aeropuerto con el código IATA: " + iataCode)));
+            .switchIfEmpty(Mono.error(new RuntimeException(
+                    "No se encontró el aeropuerto con el código IATA: " + iataCode)));
   }
 }

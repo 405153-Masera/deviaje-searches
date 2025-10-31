@@ -11,6 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.clients.HotelClient;
 import masera.deviajesearches.dtos.amadeus.response.CityDto;
 import masera.deviajesearches.dtos.amadeus.response.CountryDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.AccommodationTypeDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.BoardDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CategoryDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.ChainDto;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.CountriesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelContentResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.HotelDto;
@@ -340,7 +344,7 @@ public class HotelContentServiceImpl implements HotelContentService {
     try {
       if (response != null && response.getBoards() != null) {
 
-        for (BoardsResponse.BoardContent boardData : response.getBoards()) {
+        for (BoardDto boardData : response.getBoards()) {
 
           Board board = new Board();
           board.setCode(boardData.getCode());
@@ -373,7 +377,7 @@ public class HotelContentServiceImpl implements HotelContentService {
     try {
       if (response != null && response.getCategories() != null) {
 
-        for (CategoriesResponse.CategoryContent categoryData : response.getCategories()) {
+        for (CategoryDto categoryData : response.getCategories()) {
 
           Category category = new masera.deviajesearches.entities.Category();
           category.setCode(categoryData.getCode());
@@ -446,8 +450,7 @@ public class HotelContentServiceImpl implements HotelContentService {
     try {
       if (response != null && response.getAccommodations() != null) {
 
-        for (AccommodationResponse
-                  .AccommodationContent accommodationData : response.getAccommodations()) {
+        for (AccommodationTypeDto accommodationData : response.getAccommodations()) {
 
           Accommodation accommodation = new Accommodation();
           accommodation.setCode(accommodationData.getCode());
@@ -514,7 +517,7 @@ public class HotelContentServiceImpl implements HotelContentService {
     try {
       if (response != null && response.getChains() != null) {
 
-        for (ChainsResponse.ChainContent chainData : response.getChains()) {
+        for (ChainDto chainData : response.getChains()) {
 
           Chain chain = new masera.deviajesearches.entities.Chain();
           chain.setCode(chainData.getCode());

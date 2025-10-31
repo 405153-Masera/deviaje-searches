@@ -26,5 +26,6 @@ public class ImageDto {
 
   private String visualOrder;
 
+  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "checkstyle:MemberName"})
   private String PMSRoomCode;
 }

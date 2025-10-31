@@ -9,7 +9,10 @@ import lombok.Data;
 public class IataResponse {
 
   private String iata;
+
   private String name;
+
   private String city;
+
   private String country;
 }

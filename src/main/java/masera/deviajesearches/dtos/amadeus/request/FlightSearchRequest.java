@@ -1,6 +1,5 @@
 package masera.deviajesearches.dtos.amadeus.request;
 
-
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,14 +16,24 @@ import lombok.NoArgsConstructor;
 public class FlightSearchRequest {
 
   private String origin;
+
   private String destination;
+
   private LocalDate departureDate;
+
   private LocalDate returnDate;
+
   private Integer adults;
+
   private Integer children;
+
   private Integer infants;
-  private String travelClass; // ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST
+
+  private String travelClass;
+
   private Integer maxResults = 40;
+
   private String currency;
+
   private Boolean nonStop;
 }

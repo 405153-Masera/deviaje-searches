@@ -2,6 +2,7 @@ package masera.deviajesearches.dtos.amadeus.response.hotelbeds.accommodations;
 
 import java.util.List;
 import lombok.Data;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.AccommodationTypeDto;
 
 /**
  * DTO para la respuesta de tipos de alojamiento de Hotelbeds.
@@ -9,16 +10,5 @@ import lombok.Data;
 @Data
 public class AccommodationResponse {
 
-  List<AccommodationContent> accommodations;
-
-  /**
-   * Contenido del tipo de alojamiento.
-   */
-  @Data
-  public static class AccommodationContent {
-
-    private String code;
-
-    private String typeDescription;
-  }
+  List<AccommodationTypeDto> accommodations;
 }

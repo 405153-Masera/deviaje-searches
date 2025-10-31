@@ -15,4 +15,6 @@ public class BoardDto {
   private String code;
 
   private ContentDto description;
+
+  private String multiLingualCode;
 }

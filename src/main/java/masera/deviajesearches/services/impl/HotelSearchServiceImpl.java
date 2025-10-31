@@ -29,20 +29,17 @@ import org.springframework.stereotype.Service;
 public class HotelSearchServiceImpl implements HotelSearchService {
 
   private final HotelClient hotelClient;
+
   private final HotelRepository hotelRepository;
+
   private final ModelMapper modelMapper;
+
   private final ObjectMapper objectMapper;
 
   @Override
   public HotelSearchResponse searchHotels(HotelSearchRequest request) {
     log.info("Buscando hoteles con los siguientes parámetros: {}", request);
-
-    try {
-      return hotelClient.searchHotels(request).block();
-    } catch (Exception e) {
-      log.error("Error al buscar hoteles: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al buscar hoteles", e);
-    }
+    return hotelClient.searchHotels(request).block();
   }
 
   @Override
