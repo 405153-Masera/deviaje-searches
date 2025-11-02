@@ -32,35 +32,18 @@ public class FlightSearchServiceImp implements FlightSearchService {
    */
   @Override
   public Object searchFlights(FlightSearchRequest flightSearchRequest) {
-
     log.info("Iniciando búsqueda de vuelos con parámetros: {}", flightSearchRequest);
-    try {
-      String token = amadeusTokenService.getToken();
-      Object flights = flightClient.searchFlightOffers(flightSearchRequest, token).block();
-      log.info("Búsqueda de vuelos completada con éxito.");
-
-      return flights;
-    } catch (Exception e) {
-      log.error("Error de búsqueda de vuelos: {}", e.getMessage());
-      throw e;
-    }
+    String token = amadeusTokenService.getToken();
+    return flightClient.searchFlightOffers(flightSearchRequest, token).block();
   }
 
   @Override
   public Object searchFlightOfferUpsell(Object flightOffer) {
     log.info("Iniciando la búsqueda de ofertas alternativas");
-    try {
-      String token = amadeusTokenService.getToken();
+    String token = amadeusTokenService.getToken();
 
-      Object flightOffersUpselling = this.flightClient
-              .searchUpsellingFlightOffers(flightOffer, token).block();
-
-      log.info("Búsqueda de las ofertas alternativas finalizada");
-      return flightOffersUpselling;
-    } catch (Exception e) {
-      log.error("Error al obtener las ofertas alternativas {}", e.getMessage());
-      throw e;
-    }
+    return this.flightClient
+            .searchUpsellingFlightOffers(flightOffer, token).block();
   }
 
   @Override

@@ -132,7 +132,7 @@ public class ErrorHandler {
             code,
             message
     );
-    return new HotelBedsApiException(formattedMessage, statusCode);
+    return new HotelBedsApiException(formattedMessage, statusCode, code);
   }
 
   /**

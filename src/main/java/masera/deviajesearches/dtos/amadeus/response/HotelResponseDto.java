@@ -5,7 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.FacilityDto;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.ImageDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.InterestPointDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.IssueDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.PhoneDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.RoomDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.TerminalDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.WildcardDto;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.segments.SegmentDto;
 
 /**
  * DTO que representa un hotel.
@@ -18,26 +26,23 @@ public class HotelResponseDto {
 
   private String code;
 
-
   private String name;
 
   private String description;
 
   private CountryDto country;
 
-  private String state;
+  private String stateCode;
 
   private String destination;
 
-  private String zone;
+  private Integer zoneCode;
 
-  private String categoryCode;
+  private String category;
 
-  private String categoryGroupCode;
+  private String chain;
 
-  private String chainCode;
-
-  private String accommodationTypeCode;
+  private String accommodationType;
 
   private String address;
 
@@ -49,5 +54,27 @@ public class HotelResponseDto {
 
   private String email;
 
+  private String web;
+
+  private List<PhoneDto> phones;
+
+  private List<FacilityDto> facilities;
+
+  private List<RoomDto> rooms;
+
   private List<ImageDto> images;
+
+  private List<InterestPointDto> interestPoints;
+
+  private List<SegmentDto> segments;
+
+  private List<TerminalDto> terminals;
+
+  private List<WildcardDto> wildcards;
+
+  private List<IssueDto> issues;
+
+  private Integer ranking;
+
+  private String s2c;
 }

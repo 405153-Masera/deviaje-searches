@@ -45,7 +45,9 @@ import masera.deviajesearches.repositories.FacilityRepository;
 import masera.deviajesearches.repositories.HotelRepository;
 import masera.deviajesearches.services.interfaces.HotelContentService;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Implementación del servicio de contenido de hoteles.
@@ -143,16 +145,9 @@ public class HotelContentServiceImpl implements HotelContentService {
           int from, int to, String language, String lastUpdateTime) {
 
     log.info("Cargando países en idioma {}", language);
-
-    try {
-      CountriesResponse response = hotelClient.getCountries(
-              from, to, language, lastUpdateTime).block();
-      return processCountryResponse(response).size();
-
-    } catch (Exception e) {
-      log.error("Error al cargar países: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al cargar los países", e);
-    }
+    CountriesResponse response = hotelClient.getCountries(
+            from, to, language, lastUpdateTime).block();
+    return processCountryResponse(response).size();
   }
 
   @Override
@@ -160,31 +155,18 @@ public class HotelContentServiceImpl implements HotelContentService {
           int from, int to, String language, String lastUpdateTime) {
     log.info("Cargando destinos en idioma {}", language);
 
-    try {
-      DestinationsResponse response = hotelClient.getDestinations(
-              from, to, language, lastUpdateTime).block();
-      return processDestinationResponse(response);
-
-    } catch (Exception e) {
-      log.error("Error al cargar destinos: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al cargar los destinos", e);
-    }
+    DestinationsResponse response = hotelClient.getDestinations(
+            from, to, language, lastUpdateTime).block();
+    return processDestinationResponse(response);
   }
 
   @Override
   public Integer loadAccommodations(int from, int to, String language, String lastUpdateTime) {
     log.info("Cargando tipos de alojamientos en idioma {}", language);
 
-    try {
-      AccommodationResponse response = hotelClient.getAccommodations(
-              from, to, language, lastUpdateTime).block();
-
-      return processAccommodationResponse(response);
-
-    } catch (Exception e) {
-      log.error("Error al cargar los tipos de alojamientos: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al cargar los tipos de alojamientos", e);
-    }
+    AccommodationResponse response = hotelClient.getAccommodations(
+            from, to, language, lastUpdateTime).block();
+    return processAccommodationResponse(response);
   }
 
 
@@ -203,7 +185,6 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     CategoriesResponse response = hotelClient.getCategories(
             from, to, language, lastUpdateTime).block();
-
     return processCategoriesResponse(response);
   }
 
@@ -213,7 +194,6 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     FacilitiesResponse response = hotelClient.getFacilities(
             from, to, language, lastUpdateTime).block();
-
     return processFacilitiesResponse(response);
   }
 
@@ -225,7 +205,6 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     FacilityGroupsResponse response = hotelClient.getFacilityGroups(
             from, to, language, lastUpdateTime).block();
-
     return processFacilityGroupsResponse(response);
   }
 
@@ -234,7 +213,6 @@ public class HotelContentServiceImpl implements HotelContentService {
     log.info("Cargando cadenas hoteleras en idioma {}", language);
 
     ChainsResponse response = hotelClient.getChains(from, to, language, lastUpdateTime).block();
-
     return processChainsResponse(response);
   }
 
@@ -247,22 +225,12 @@ public class HotelContentServiceImpl implements HotelContentService {
   private Integer saveHotels(HotelContentResponse response) {
     List<Object> results = new ArrayList<>();
 
-    try {
-      if (response != null && response.getHotels() != null) {
-        for (HotelDto hotelDto : response.getHotels()) {
-          try {
-
-            Hotel hotel = saveHotel(hotelDto);
-            results.add(hotel);
-          } catch (Exception e) {
-            log.error("Error al procesar hotel {}: {}", hotelDto.getCode(), e.getMessage(), e);
-          }
-        }
+    if (response != null && response.getHotels() != null) {
+      for (HotelDto hotelDto : response.getHotels()) {
+        Hotel hotel = saveHotel(hotelDto);
+        results.add(hotel);
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de contenido de hoteles: {}", e.getMessage(), e);
     }
-
     log.info("Procesados {} hoteles", results.size());
     return results.size();
   }
@@ -277,25 +245,20 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getFacilities() != null) {
+    if (response != null && response.getFacilities() != null) {
 
-        for (FacilitiesResponse.FacilityContent facilityData : response.getFacilities()) {
-          Facility facility = new Facility();
-          facility.setCode(facilityData.getCode());
-          facility.setFacilityGroupCode(facilityData.getFacilityGroupCode());
-          facility.setFacilityTypologyCode(facilityData.getFacilityTypologyCode());
-          if (facilityData.getDescription() != null) {
-            facility.setDescription(facilityData.getDescription().getContent());
-          }
-          facilityRepository.save(facility);
-          savedCount++;
+      for (FacilitiesResponse.FacilityContent facilityData : response.getFacilities()) {
+        Facility facility = new Facility();
+        facility.setCode(facilityData.getCode());
+        facility.setFacilityGroupCode(facilityData.getFacilityGroupCode());
+        facility.setFacilityTypologyCode(facilityData.getFacilityTypologyCode());
+        if (facilityData.getDescription() != null) {
+          facility.setDescription(facilityData.getDescription().getContent());
         }
+        facilityRepository.save(facility);
+        savedCount++;
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de instalaciones: {}", e.getMessage(), e);
     }
-
     log.info("Procesadas {} instalaciones", savedCount);
     return savedCount;
   }
@@ -309,24 +272,18 @@ public class HotelContentServiceImpl implements HotelContentService {
   private Integer processFacilityGroupsResponse(FacilityGroupsResponse response) {
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getFacilityGroups() != null) {
+    if (response != null && response.getFacilityGroups() != null) {
+      for (FacilityGroupsResponse.FacilityGroupContent groupData : response.getFacilityGroups()) {
 
-        for (FacilityGroupsResponse.FacilityGroupContent groupData : response.getFacilityGroups()) {
-
-          FacilityGroup facilityGroup = new FacilityGroup();
-          facilityGroup.setCode(groupData.getCode());
-          if (groupData.getDescription() != null) {
-            facilityGroup.setDescription(groupData.getDescription().getContent());
-          }
-          facilityGroupRepository.save(facilityGroup);
-          savedCount++;
+        FacilityGroup facilityGroup = new FacilityGroup();
+        facilityGroup.setCode(groupData.getCode());
+        if (groupData.getDescription() != null) {
+          facilityGroup.setDescription(groupData.getDescription().getContent());
         }
+        facilityGroupRepository.save(facilityGroup);
+        savedCount++;
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de grupos de instalaciones: {}", e.getMessage(), e);
     }
-
     log.info("Procesados {} grupos de instalaciones", savedCount);
     return savedCount;
   }
@@ -341,25 +298,19 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getBoards() != null) {
+    if (response != null && response.getBoards() != null) {
+      for (BoardDto boardData : response.getBoards()) {
 
-        for (BoardDto boardData : response.getBoards()) {
-
-          Board board = new Board();
-          board.setCode(boardData.getCode());
-          board.setMultiLingualCode(boardData.getMultiLingualCode());
-          if (boardData.getDescription() != null) {
-            board.setDescription(boardData.getDescription().getContent());
-          }
-          boardRepository.save(board);
-          savedCount++;
+        Board board = new Board();
+        board.setCode(boardData.getCode());
+        board.setMultiLingualCode(boardData.getMultiLingualCode());
+        if (boardData.getDescription() != null) {
+          board.setDescription(boardData.getDescription().getContent());
         }
+        boardRepository.save(board);
+        savedCount++;
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de regímenes de alimentos: {}", e.getMessage(), e);
     }
-
     log.info("Procesados {} regímenes de alimentos", savedCount);
     return savedCount;
   }
@@ -374,27 +325,21 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getCategories() != null) {
+    if (response != null && response.getCategories() != null) {
+      for (CategoryDto categoryData : response.getCategories()) {
 
-        for (CategoryDto categoryData : response.getCategories()) {
-
-          Category category = new masera.deviajesearches.entities.Category();
-          category.setCode(categoryData.getCode());
-          if (categoryData.getDescription() != null) {
-            category.setDescription(categoryData.getDescription().getContent());
-          }
-          category.setAccommodationType(categoryData.getAccommodationType());
-          category.setCategoryGroup(categoryData.getGroup());
-          category.setSimpleCode(categoryData.getSimpleCode());
-          categoryRepository.save(category);
-          savedCount++;
+        Category category = new masera.deviajesearches.entities.Category();
+        category.setCode(categoryData.getCode());
+        if (categoryData.getDescription() != null) {
+          category.setDescription(categoryData.getDescription().getContent());
         }
+        category.setAccommodationType(categoryData.getAccommodationType());
+        category.setCategoryGroup(categoryData.getGroup());
+        category.setSimpleCode(categoryData.getSimpleCode());
+        categoryRepository.save(category);
+        savedCount++;
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de categorías de hoteles: {}", e.getMessage(), e);
     }
-
     log.info("Procesadas {} categorías de hoteles", savedCount);
     return savedCount;
   }
@@ -408,36 +353,32 @@ public class HotelContentServiceImpl implements HotelContentService {
   private List<CountryDto> processCountryResponse(CountriesResponse response) {
     List<CountryDto> countryDtos = new ArrayList<>();
 
-    try {
-      if (response != null && response.getCountries() != null) {
-        for (CountriesResponse.CountryContent countryData : response.getCountries()) {
-          try {
-            String code = countryData.getCode();
+    if (response != null && response.getCountries() != null) {
+      for (CountriesResponse.CountryContent countryData : response.getCountries()) {
+        String code = countryData.getCode();
 
-            if (code != null) {
-              Country country = new Country();
-              country.setCode(code);
-              country.setIsoCode(countryData.getIsoCode());
+        if (code != null) {
+          Country country = new Country();
+          country.setCode(code);
+          country.setIsoCode(countryData.getIsoCode());
 
-              if (countryData.getDescription() != null
-                      && countryData.getDescription().getContent() != null) {
-                country.setName(countryData.getDescription().getContent());
-              }
-
-              if (countryData.getStates() != null) {
-                country.setStates(objectMapper.writeValueAsString(countryData.getStates()));
-              }
-              country = countryRepository.save(country);
-              countryDtos.add(modelMapper.map(country, CountryDto.class));
-            }
-
-          } catch (Exception e) {
-            log.error("Error al procesar país: {}", e.getMessage(), e);
+          if (countryData.getDescription() != null
+                  && countryData.getDescription().getContent() != null) {
+            country.setName(countryData.getDescription().getContent());
           }
+
+          if (countryData.getStates() != null) {
+            try {
+              country.setStates(objectMapper.writeValueAsString(countryData.getStates()));
+            } catch (Exception e) {
+              throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                      "Error al procesar campos JSON: " + e.getMessage(), e);
+            }
+          }
+          country = countryRepository.save(country);
+          countryDtos.add(modelMapper.map(country, CountryDto.class));
         }
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de países: {}", e.getMessage(), e);
     }
     log.info("Procesados {} países", countryDtos.size());
     return countryDtos;
@@ -447,22 +388,16 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getAccommodations() != null) {
+    if (response != null && response.getAccommodations() != null) {
+      for (AccommodationTypeDto accommodationData : response.getAccommodations()) {
 
-        for (AccommodationTypeDto accommodationData : response.getAccommodations()) {
-
-          Accommodation accommodation = new Accommodation();
-          accommodation.setCode(accommodationData.getCode());
-          accommodation.setTypeDescription(accommodationData.getTypeDescription());
-          accommodationRepository.save(accommodation);
-          savedCount++;
-        }
+        Accommodation accommodation = new Accommodation();
+        accommodation.setCode(accommodationData.getCode());
+        accommodation.setTypeDescription(accommodationData.getTypeDescription());
+        accommodationRepository.save(accommodation);
+        savedCount++;
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de tipos de alojamiento: {}", e.getMessage(), e);
     }
-
     log.info("Procesados {} tipos de alojamiento", savedCount);
     return savedCount;
   }
@@ -476,31 +411,25 @@ public class HotelContentServiceImpl implements HotelContentService {
   private int processDestinationResponse(DestinationsResponse response) {
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getDestinations() != null) {
+    if (response != null && response.getDestinations() != null) {
+      for (DestinationsResponse
+              .DestinationContent destinationData : response.getDestinations()) {
 
-        for (DestinationsResponse
-                  .DestinationContent destinationData : response.getDestinations()) {
+        String countryCode = destinationData.getCountryCode();
+        Destination destination = new Destination();
+        destination.setCode(destinationData.getCode());
 
-          String countryCode = destinationData.getCountryCode();
-          Destination destination = new Destination();
-          destination.setCode(destinationData.getCode());
-
-          if (countryCode != null) {
-            countryRepository.findById(countryCode).ifPresent(destination::setCountry);
-          }
-
-          if (destinationData.getName() != null) {
-            destination.setName(destinationData.getName().getContent());
-          }
-          destinationRepository.save(destination);
-          savedCount++;
+        if (countryCode != null) {
+          countryRepository.findById(countryCode).ifPresent(destination::setCountry);
         }
-      }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de destinos: {}", e.getMessage(), e);
-    }
 
+        if (destinationData.getName() != null) {
+          destination.setName(destinationData.getName().getContent());
+        }
+        destinationRepository.save(destination);
+        savedCount++;
+      }
+    }
     log.info("Procesados {} destinos", savedCount);
     return savedCount;
   }
@@ -514,24 +443,18 @@ public class HotelContentServiceImpl implements HotelContentService {
   private Integer processChainsResponse(ChainsResponse response) {
     int savedCount = 0;
 
-    try {
-      if (response != null && response.getChains() != null) {
+    if (response != null && response.getChains() != null) {
+      for (ChainDto chainData : response.getChains()) {
 
-        for (ChainDto chainData : response.getChains()) {
-
-          Chain chain = new masera.deviajesearches.entities.Chain();
-          chain.setCode(chainData.getCode());
-          if (chainData.getDescription() != null) {
-            chain.setDescription(chainData.getDescription().getContent());
-          }
-          chainRepository.save(chain);
-          savedCount++;
+        Chain chain = new masera.deviajesearches.entities.Chain();
+        chain.setCode(chainData.getCode());
+        if (chainData.getDescription() != null) {
+          chain.setDescription(chainData.getDescription().getContent());
         }
+        chainRepository.save(chain);
+        savedCount++;
       }
-    } catch (Exception e) {
-      log.error("Error al procesar respuesta de cadenas hoteleras: {}", e.getMessage(), e);
     }
-
     log.info("Procesadas {} cadenas hoteleras", savedCount);
     return savedCount;
   }
@@ -623,8 +546,8 @@ public class HotelContentServiceImpl implements HotelContentService {
       }
 
     } catch (Exception e) {
-      log.error("Error serializando campos JSON para hotel {}: {}",
-              hotelDto.getCode(), e.getMessage());
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+              "Error al procesar campos JSON: " + e.getMessage(), e);
     }
 
     hotel.setWeb(hotelDto.getWeb());
@@ -632,7 +555,6 @@ public class HotelContentServiceImpl implements HotelContentService {
     hotel.setS2c(hotelDto.getS2C());
     hotel.setRanking(hotelDto.getRanking());
     hotel.setLastUpdated(LocalDateTime.now());
-
     return hotelRepository.save(hotel);
   }
 }

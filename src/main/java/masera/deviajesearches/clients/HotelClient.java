@@ -124,7 +124,10 @@ public class HotelClient {
             .retrieve()
             .bodyToMono(CountriesResponse.class)
             .doOnSuccess(response -> log.info("Países obtenidos exitosamente"))
-            .doOnError(error -> log.error("Error al obtener países: {}", error.getMessage()));
+            .doOnError(error -> log.error("Error al obtener países: {}", error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
+              throw errorHandler.handleHotelBedsError(e);
+            });
   }
 
 
@@ -149,7 +152,10 @@ public class HotelClient {
             .retrieve()
             .bodyToMono(DestinationsResponse.class)
             .doOnSuccess(response -> log.info("Destinos obtenidos exitosamente"))
-            .doOnError(error -> log.error("Error al obtener destinos: {}", error.getMessage()));
+            .doOnError(error -> log.error("Error al obtener destinos: {}", error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
+              throw errorHandler.handleHotelBedsError(e);
+            });
   }
 
   /**
@@ -239,7 +245,7 @@ public class HotelClient {
             .doOnError(error -> log.error(
                     "Error al obtener Categorías de hoteles: {}", error.getMessage()))
             .onErrorResume(WebClientResponseException.class, e -> {
-              log.error("Error al buscarCategorías de hoteles - Status: {}, Body: {}",
+              log.error("Error al buscar Categorías de hoteles - Status: {}, Body: {}",
                       e.getStatusCode(), e.getResponseBodyAsString());
               throw errorHandler.handleHotelBedsError(e);
             });

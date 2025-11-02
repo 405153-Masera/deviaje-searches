@@ -16,6 +16,8 @@ public class FacilityDto {
 
   private Integer facilityGroupCode;
 
+  private String facilityGroupName;
+
   private String facilityName;
 
   private Integer order;

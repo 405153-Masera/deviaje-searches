@@ -2,6 +2,7 @@ package masera.deviajesearches.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.dtos.amadeus.request.HotelSearchRequest;
 import masera.deviajesearches.dtos.amadeus.response.HotelResponseDto;
 import masera.deviajesearches.dtos.amadeus.response.HotelSearchResponse;
@@ -18,11 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
  * Controlador para la búsqueda de hoteles.
  * Este controlador maneja las solicitudes relacionadas con la búsqueda de hoteles.
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/searches/hotels")
 public class HotelSearchController {
-
 
   private final HotelSearchService hotelSearchService;
 
