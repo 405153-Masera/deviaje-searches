@@ -117,6 +117,8 @@ public class HotelSearchResponse {
 
     private List<CancellationPolicy> cancellationPolicies;
 
+    private Taxes taxes;
+
     private Integer rooms;
 
     private Integer adults;
@@ -149,6 +151,21 @@ public class HotelSearchResponse {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  public static class Tax {
+
+    private String code;
+
+    private String name;
+
+    private BigDecimal amount;
+  }
+
+  /**
+   * Representa una oferta aplicada a una tarifa.
+   */
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class Offer {
 
     private String code;
@@ -167,5 +184,43 @@ public class HotelSearchResponse {
   public static class CancellationPolicy {
     private BigDecimal amount;
     private String from;
+  }
+
+  /**
+   * Representa la lista de los impuestos.
+   */
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class Taxes {
+
+    private List<TaxDetail> taxes;   // Lista de impuestos
+
+    private Boolean allIncluded;     // Si todos están incluidos en el precio
+  }
+
+  /**
+   * Representa los detalles de un impuesto.
+   */
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class TaxDetail {
+
+    private Boolean included;        // Si está incluido o no en el precio final
+
+    private BigDecimal amount;       // Monto del impuesto
+
+    private String percent;          // Monto en porcentaje
+
+    private String currency;         // Moneda
+
+    private String type;             // Tipo principal (TAX)
+
+    private BigDecimal clientAmount; // Lo que paga el cliente
+
+    private String clientCurrency;   // Moneda del cliente
+
+    private String subType;          // Ej: "City Tax"
   }
 }
