@@ -125,5 +125,16 @@ public interface HotelContentService {
    * @return cantidad de cadenas hoteleras cargadas
    */
   Integer loadChains(int from, int to, String language, String lastUpdateTime);
+
+  /**
+   * Carga terminals desde la API de Hotelbeds y las guarda en la base de datos.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return cantidad de cadenas hoteleras cargadas
+   */
+  Integer loadTerminals(int from, int to, String language, String lastUpdateTime);
 }
 

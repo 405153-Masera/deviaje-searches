@@ -151,21 +151,6 @@ public class HotelSearchResponse {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class Tax {
-
-    private String code;
-
-    private String name;
-
-    private BigDecimal amount;
-  }
-
-  /**
-   * Representa una oferta aplicada a una tarifa.
-   */
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
   public static class Offer {
 
     private String code;

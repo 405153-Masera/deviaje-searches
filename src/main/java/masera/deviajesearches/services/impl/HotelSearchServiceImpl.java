@@ -36,6 +36,7 @@ import masera.deviajesearches.repositories.FacilityGroupRepository;
 import masera.deviajesearches.repositories.FacilityRepository;
 import masera.deviajesearches.repositories.HotelRepository;
 import masera.deviajesearches.repositories.SegmentRepository;
+import masera.deviajesearches.repositories.TerminalRepository;
 import masera.deviajesearches.services.interfaces.HotelSearchService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,8 @@ public class HotelSearchServiceImpl implements HotelSearchService {
   private final FacilityRepository facilityRepository;
 
   private final FacilityGroupRepository facilityGroupRepository;
+
+  private final TerminalRepository terminalRepository;
 
   private final ModelMapper modelMapper;
 
@@ -235,6 +238,7 @@ public class HotelSearchServiceImpl implements HotelSearchService {
                 hotel.getTerminals(),
                 new TypeReference<>() {}
         );
+        enrichTerminals(terminals);
         responseDto.setTerminals(terminals);
       } else {
         responseDto.setTerminals(new ArrayList<>());
@@ -289,6 +293,27 @@ public class HotelSearchServiceImpl implements HotelSearchService {
                     facilityDto.setFacilityGroupName(facilityGroup.getDescription());
                     facilityDto.setFacilityGroupCode(facilityGroup.getCode());
                   });
+        });
+      }
+    }
+  }
+
+  /**
+   * Enriquece las terminales con nombres y descripción.
+   *
+   * @param terminals lista de terminales a enriquecer
+   */
+  private void enrichTerminals(List<TerminalDto> terminals) {
+    for (TerminalDto terminalDto : terminals) {
+
+      if (terminalDto.getTerminalCode() != null) {
+
+        terminalRepository.findById(terminalDto.getTerminalCode()).ifPresent(terminal -> {
+
+          terminalDto.setName(new ContentDto());
+          terminalDto.getName().setContent(terminal.getName());
+          terminalDto.setDescription(new ContentDto());
+          terminalDto.getDescription().setContent(terminal.getDescription());
         });
       }
     }

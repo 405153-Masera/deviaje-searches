@@ -14,6 +14,7 @@ import masera.deviajesearches.dtos.amadeus.response.hotelbeds.chains.ChainsRespo
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.destinations.DestinationsResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.facilities.FacilitiesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.facilities.FacilityGroupsResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.terminals.TerminalsResponse;
 import masera.deviajesearches.utils.ErrorHandler;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpHeaders;
@@ -341,6 +342,33 @@ public class HotelClient {
             .onErrorResume(WebClientResponseException.class, e -> {
               log.error("Error al buscar cadenas hoteleras - Status: {}, Body: {}",
                       e.getStatusCode(), e.getResponseBodyAsString());
+              throw errorHandler.handleHotelBedsError(e);
+            });
+  }
+
+  /**
+   * Obtiene las terminales desde la API de Hotelbeds.
+   *
+   * @param from índice inicial
+   * @param to índice final
+   * @param language idioma
+   * @param lastUpdateTime (Opcional) fecha de última actualización
+   * @return Mono con la respuesta de cadenas hoteleras
+   */
+  public Mono<TerminalsResponse> getTerminals(
+          int from, int to, String language, String lastUpdateTime) {
+
+    String uri = buildUriWithParams(
+            from, to, language, lastUpdateTime, BASE_ENDPOINT + "/types/terminals");
+    return webClient.get()
+            .uri(hotelbedsConfig.getBaseUrl() + uri)
+            .headers(this::addHotelbedsHeaders)
+            .retrieve()
+            .bodyToMono(TerminalsResponse.class)
+            .doOnSuccess(response -> log.info("Terminales obtenidas exitosamente"))
+            .doOnError(error -> log.error(
+                    "Error al obtener las terminales: {}", error.getMessage()))
+            .onErrorResume(WebClientResponseException.class, e -> {
               throw errorHandler.handleHotelBedsError(e);
             });
   }

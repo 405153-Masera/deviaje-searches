@@ -240,6 +240,30 @@ public class HotelContentController {
   }
 
   /**
+   * Carga las terminales desde la API de Hotelbeds.
+   *
+   * @param from índice inicial (por defecto 1)
+   * @param to índice final (por defecto 1000)
+   * @param language idioma (por defecto CAS)
+   * @param lastUpdateTime fecha de última actualización en formato YYYY-MM-DD
+   * @return respuesta con el resultado de la carga
+   */
+  @PostMapping("/terminals/load")
+  public ResponseEntity<String> loadTerminals(
+          @RequestParam(defaultValue = "1") int from,
+          @RequestParam(defaultValue = "1000") int to,
+          @RequestParam(defaultValue = "CAS") String language,
+          @RequestParam(required = false) String lastUpdateTime) {
+
+    Integer size = hotelContentService.loadTerminals(
+            from, to, language, lastUpdateTime);
+    String message = lastUpdateTime != null
+            ? "Terminales actualizadas: " + size + " desde " + lastUpdateTime
+            : "Terminales: " + size + " desde " + from + " hasta " + to;
+    return ResponseEntity.ok(message);
+  }
+
+  /**
    * Obtiene todos los países guardados en la base de datos.
    *
    * @return lista de países

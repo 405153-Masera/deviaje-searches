@@ -25,6 +25,8 @@ import masera.deviajesearches.dtos.amadeus.response.hotelbeds.chains.ChainsRespo
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.destinations.DestinationsResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.facilities.FacilitiesResponse;
 import masera.deviajesearches.dtos.amadeus.response.hotelbeds.facilities.FacilityGroupsResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.terminals.TerminalsResponse;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.terminals.TerminalsResponse.TerminalData;
 import masera.deviajesearches.entities.Accommodation;
 import masera.deviajesearches.entities.Board;
 import masera.deviajesearches.entities.Category;
@@ -34,6 +36,7 @@ import masera.deviajesearches.entities.Destination;
 import masera.deviajesearches.entities.Facility;
 import masera.deviajesearches.entities.FacilityGroup;
 import masera.deviajesearches.entities.Hotel;
+import masera.deviajesearches.entities.Terminal;
 import masera.deviajesearches.repositories.AccommodationRepository;
 import masera.deviajesearches.repositories.BoardRepository;
 import masera.deviajesearches.repositories.CategoryRepository;
@@ -43,6 +46,7 @@ import masera.deviajesearches.repositories.DestinationRepository;
 import masera.deviajesearches.repositories.FacilityGroupRepository;
 import masera.deviajesearches.repositories.FacilityRepository;
 import masera.deviajesearches.repositories.HotelRepository;
+import masera.deviajesearches.repositories.TerminalRepository;
 import masera.deviajesearches.services.interfaces.HotelContentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -82,6 +86,8 @@ public class HotelContentServiceImpl implements HotelContentService {
   private final FacilityGroupRepository facilityGroupRepository;
 
   private final ChainRepository chainRepository;
+
+  private final TerminalRepository terminalRepository;
 
   /**
    * Carga hoteles desde la API de Hotelbeds.
@@ -214,6 +220,15 @@ public class HotelContentServiceImpl implements HotelContentService {
 
     ChainsResponse response = hotelClient.getChains(from, to, language, lastUpdateTime).block();
     return processChainsResponse(response);
+  }
+
+  @Override
+  public Integer loadTerminals(int from, int to, String language, String lastUpdateTime) {
+    log.info("Cargando terminales en idioma {}", language);
+
+    TerminalsResponse response = hotelClient.getTerminals(
+            from, to, language, lastUpdateTime).block();
+    return processTerminalsResponse(response);
   }
 
   /**
@@ -459,6 +474,31 @@ public class HotelContentServiceImpl implements HotelContentService {
     return savedCount;
   }
 
+  private Integer processTerminalsResponse(TerminalsResponse response) {
+    int savedCount = 0;
+
+    if (response != null && response.getTerminals() != null) {
+      for (TerminalData terminalData : response.getTerminals()) {
+
+        Terminal terminal = new Terminal();
+        terminal.setCode(terminalData.getCode());
+        terminal.setType(terminalData.getType());
+        terminal.setCountry(terminalData.getCountry());
+        terminal.setLanguageCode(terminalData.getName().getLanguageCode());
+
+        if (terminalData.getName() != null) {
+          terminal.setName(terminalData.getName().getContent());
+        }
+        if (terminalData.getDescription() != null) {
+          terminal.setDescription(terminalData.getDescription().getContent());
+        }
+        terminalRepository.save(terminal);
+        savedCount++;
+      }
+    }
+    log.info("Procesadas {} terminales", savedCount);
+    return savedCount;
+  }
 
   /**
    * Guarda un hotel en la base de datos.
