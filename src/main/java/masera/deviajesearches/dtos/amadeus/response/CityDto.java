@@ -15,8 +15,26 @@ import lombok.NoArgsConstructor;
 public class CityDto {
 
   private String name;
+
   private String iataCode;
+
   private String country;
+
+  /**
+   * Código de subdivisión ISO‑3166‑2 si la API lo retorna.  Por ejemplo
+   * "US‑DC" para Washington D.C. o "AR‑B" para la provincia de Buenos Aires.
+   */
+  private String stateCode;
+
+  /**
+   * Nombre completo del estado o provincia derivado de {@link #stateCode}.  No
+   * es enviado a la API, pero se calcula en el back‑end o en el front‑end para
+   * mostrar ciudades ambiguas.  Por ejemplo "District of Columbia" para
+   * "US‑DC".
+   */
+  private String stateName;
+
+  private AddressDto address;
 
   /**
    * Obtiene el nombre completo del país a partir de su código ISO.
@@ -253,5 +271,16 @@ public class CityDto {
     countryMap.put("ZW", "Zimbabue");
 
     return countryMap.getOrDefault(countryCode, countryCode);
+  }
+
+  /**
+   * Muestra información adicional.
+   */
+  @Data
+  public static class AddressDto {
+
+    private String countryCode;
+
+    private String stateName;
   }
 }

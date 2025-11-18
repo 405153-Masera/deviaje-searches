@@ -52,7 +52,6 @@ public class FlightSearchServiceImp implements FlightSearchService {
     Object response = flightClient.searchCities(keyword, token).block();
 
     List<CityDto> citiesDtos = new ArrayList<>();
-
     if (response instanceof Map) {
       Map<String, Object> responseMap = (Map<String, Object>) response;
       List<Map<String, Object>> data = (List<Map<String, Object>>) responseMap.get("data");
@@ -60,22 +59,22 @@ public class FlightSearchServiceImp implements FlightSearchService {
       citiesDtos = data.stream()
               .filter(city -> city.containsKey("iataCode") && city.get("iataCode") != null)
               .map(city -> {
-                CityDto cityDto = new CityDto();
-                cityDto.setName((String) city.get("name"));
-                cityDto.setIataCode((String) city.get("iataCode"));
+                CityDto dto = new CityDto();
+                dto.setName((String) city.get("name"));
+                dto.setIataCode((String) city.get("iataCode"));
 
                 if (city.containsKey("address") && city.get("address") instanceof Map) {
                   Map<String, Object> address = (Map<String, Object>) city.get("address");
                   String countryCode = (String) address.get("countryCode");
-                  cityDto.setCountry(cityDto.getCountryName(countryCode));
-                }
+                  dto.setCountry(dto.getCountryName(countryCode));
 
-                return cityDto;
+                  String stateCode = (String) address.get("stateCode");
+                  dto.setStateCode(stateCode);
+                }
+                return dto;
               })
               .toList();
     }
-
     return citiesDtos;
-
   }
 }

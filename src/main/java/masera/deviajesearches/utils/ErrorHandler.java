@@ -46,8 +46,9 @@ public class ErrorHandler {
           int status = amadeusError.getStatus() != null
                   ? amadeusError.getStatus() : e.getStatusCode().value();
           String message = getString(amadeusError);
+          int internalCode = amadeusError.getCode();
 
-          return new AmadeusApiException(message, status);
+          return new AmadeusApiException(message, status, internalCode);
         }
       }
     } catch (JsonProcessingException ex) {
@@ -56,7 +57,7 @@ public class ErrorHandler {
     
     return new AmadeusApiException(
             "Error al comunicarse con Amadeus: " + e.getStatusText(),
-            e.getStatusCode().value());
+            e.getStatusCode().value(), 0);
   }
 
   /**

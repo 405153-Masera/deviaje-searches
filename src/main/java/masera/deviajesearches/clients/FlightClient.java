@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import masera.deviajesearches.configs.AmadeusConfig;
 import masera.deviajesearches.dtos.amadeus.request.FlightSearchRequest;
+import masera.deviajesearches.dtos.amadeus.response.hotelbeds.destinations.CitiesResponse;
 import masera.deviajesearches.utils.ErrorHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
